@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="static/css/card.css" />
+  </head>
+  <body>
+    {% for i in range(data|length) %}
+    <div class="listing_row">
+    {% for j in range(data[i]|length) %}
+    {% set el = data[i][j] %}
+    {% if j == 0 %}
+    <div class="containder first_in_row back_view">
+      <div class="containder_header">
+        <div class="containder_header_title">
+          <img src="static/img/{{ el.main_image }}" class="element__img" />
+        </div>
+      </div>
+      <div class="containder_text">
+        <div class="containder_text__title">{{ el.title }}</div>
+        <div class="containder_text__price">от {{ el.price }} руб.</div>
+        <div class="containder_text__info">
+          <div class="info">фылвофыворшфв</div>
+          <div class="info">фылвофыворшфв</div>
+          <div class="info">фылвофыворшфв</div>
+        </div>
+      </div>
+    </div>
+    {% elif j == 1 %}
+    <div class="containder second_in_row back_view">
+      <div class="containder_header">
+        <div class="containder_header_title">
+          <img src="static/img/{{ el.main_image }}" class="element__img" />
+        </div>
+      </div>
+      <div class="containder_text">
+        <div class="containder_text__title">{{ el.title }}</div>
+        <div class="containder_text__price">от {{ el.price }} руб.</div>
+        <div class="containder_text__info">
+          <div class="info">фылвофыворшфв</div>
+          <div class="info">фылвофыворшфв</div>
+          <div class="info">фылвофыворшфв</div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="containder third_in_row back_view">
+      <div class="containder_header">
+        <div class="containder_header_title">
+          <img src="static/img/{{ el.main_image }}" class="element__img" />
+        </div>
+      </div>
+      <div class="containder_text">
+        <div class="containder_text__title">{{ el.title }}</div>
+        <div class="containder_text__price">от {{ el.price }} руб.</div>
+        <div class="containder_text__info">
+          <div class="info">фылвофыворшфв</div>
+          <div class="info">фылвофыворшфв</div>
+          <div class="info">фылвофыворшфв</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    </div>
+    {% endfor %}
+    <script>
+      $(".containder").on("mouseenter", function () {
+        i = $(".containder_text__info", $(this));
+        i.toggleClass("info_visible");
+        $(this).addClass('front_view');
+        $(this).removeClass('back_view');
+      });
+      $(".containder").on("mouseleave", function () {
+        i = $(".containder_text__info", $(this));
+        i.toggleClass("info_visible");
+        cont = $(this)
+        cont.addClass('another_view')
+        setTimeout(function () {
+          cont.removeClass('front_view');
+          cont.addClass('back_view');
+          cont.removeClass('another_view')
+        }, 400)
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Регистрация</title>
+<style>
+  .flex-try {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2em;
+    }
+    .form_try {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1em;
+        align-items: center;
+        height: 50%;
+        width: 50%;
+        background-color: white;
+        border-radius: 12px;
+        gap: 1em;
+    }
+    .form-floating {
+        max-height: 100%;
+    }
+    .wrapper_for_ad {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1em;
+    }
+    .form_buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10%;
+    }
+    .form_try > div {
+        width: 100%;
+    }
+    .form_buttons > * {
+        width: 50%;
+        font-size: 1.5vw;
+        padding-right: 0;
+        padding-left: 0;
+    }
+    .close {
+      background-color: transparent;
+      border: none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="wrapper_for_ad">
+  <h1>Регистрация</h1>
+  <div class="flex-try">
+      <form class="form_try" method="post" enctype="multipart/form-data">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning" style="margin: 0;">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ message }}
+        </div>
+        {% endfor %}
+        <div class="form-floating">
+          <input type="text" class="form-control" name="name" id="name" placeholder="Имя" required>
+          <label for="name">Имя</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="text" class="form-control" name="surname" id="surname" placeholder="Фамилия" required>
+          <label for="surname">Фамилия</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="text" class="form-control" name="phone" id="phone" placeholder="Номер телефона" required>
+          <label for="email">Номер телефона</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="text" class="form-control" name="email" id="email" placeholder="name@example.com" required>
+          <label for="email">Адрес электронной почты</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="password" class="form-control" id="password" name="password" placeholder="Пароль" required>
+          <label for="password">Пароль</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="password" class="form-control" id="password2" name="password2"
+                 placeholder="Повторите пароль" required>
+          <label for="password2">Повторите пароль</label>
+        </div>
+          <div class="form_buttons">
+              <button type="submit" class="btn btn-outline-success">Зарегистрироваться</button>
+              <button type="reset" class="btn btn-outline-danger">Сбросить</button>
+          </div>
+      </form>
+  </div>
+  </div>
+
+<script type="text/javascript" src="static/js/jquery.maskedinput.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $("#phone").mask("+7 (999) 999-99-99");
+    });
+
+    $.fn.setCursorPosition = function(pos) {
+        if ($(this).get(0).setSelectionRange) {
+        $(this).get(0).setSelectionRange(pos, pos);
+        } else if ($(this).get(0).createTextRange) {
+        var range = $(this).get(0).createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', pos);
+        range.moveStart('character', pos);
+        range.select();
+    }};
+
+    $('input[name="phone"]').click(function(){
+        $(this).setCursorPosition(4);  // set position number
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Вход</title>
+<style>
+  .flex-try {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2em;
+    }
+    .form_try {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1em;
+        align-items: center;
+        height: 50%;
+        width: 50%;
+        background-color: white;
+        border-radius: 12px;
+        gap: 1em;
+    }
+    .form-floating {
+        max-height: 100%;
+    }
+    .wrapper_for_ad {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1em;
+    }
+    .form_buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10%;
+    }
+    .form_try > div {
+        width: 100%;
+    }
+    .form_buttons > * {
+        width: 100%;
+        font-size: 1.5vw;
+        padding-right: 0;
+        padding-left: 0;
+    }
+    .close {
+      background-color: transparent;
+      border: none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="wrapper_for_ad">
+  <h1>Вход</h1>
+  <div class="flex-try">
+      <form class="form_try" method="post" enctype="multipart/form-data">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-success" style="margin: 0;">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ message }}
+        </div>
+        {% endfor %}
+        <div class="form-floating">
+          <input type="text" class="form-control" name="email" id="email" placeholder="name@example.com" required>
+          <label for="email">Адрес электронной почты</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="password" class="form-control" id="password" name="password" placeholder="Пароль" required>
+          <label for="password">Пароль</label>
+        </div>
+    
+        <div class="form-check text-start">
+          <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault" name="remember_me">
+          <label class="form-check-label" for="flexCheckDefault">
+            Запомнить меня
+          </label>
+        </div>
+          <div class="form_buttons">
+              <button type="submit" class="btn btn-outline-success">Войти</button>
+          </div>
+      </form>
+  </div>
+  </div>
+{% endblock %}

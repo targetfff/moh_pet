@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100;0,300;0,500;0,600;1,100;1,200;1,400;1,500&display=swap");
+a {
+  text-decoration: none;
+  color: black;
+}
+.header {
+  z-index: 99999999999;
+  background-color: white;
+  height: 6em;
+  width: 100%;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Beryozki";
+  letter-spacing: 0.5em;
+}
+
+.header__border {
+  height: 1px;
+  width: 100vw;
+  border: 1px solid #cbd2b7;
+}
+.header_logo__title {
+  font-size: 4em;
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+}
+.header_logo__icon {
+  height: 4.5em;
+  width: 4.5em;
+  position: relative;
+}
+.header_logo__img {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.header_container {
+  max-height: 100%;
+  width: 92vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header_logo {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+.header_container_row {
+  display: flex;
+  gap: 2em;
+}
+.hover-underline-animation {
+  display: inline-block;
+  position: relative;
+  color: #6ba45c;
+}
+
+.hover-underline-animation::after {
+  content: "";
+  position: absolute;
+  width: 95%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #6ba45c;
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+  margin-bottom: 10px;
+}
+
+.hover-underline-animation:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.header_container_row__button {
+  border: none;
+  background: none;
+  padding-top: 15px;
+  color: black;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  font-size: 2em;
+  transition: color 0.4s ease 0s;
+}
+
+.header_container_row__button2 {
+  padding-top: 15px;
+  color: #3c6e00;
+  border: none;
+  font-size: 2em;
+  letter-spacing: 0.25em;
+  background: none;
+}
+
+.header_container_row__button2:hover {
+  color: black;
+  font-weight: 600;
+}
+
+.header_container_row__button:hover {
+  color: #63636d;
+  transition: color 0.3s ease 0s;
+}
