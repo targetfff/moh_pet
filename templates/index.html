@@ -1,54 +1,61 @@
 {% extends 'base.html' %}
 
 {% macro render_tree(d) %}
-    <div style="transition: all 1s;"
-    {% if d != tree %}
-    class="pre-animation"
-    {% endif %}>
-    {% for key, value in d.items(): %}
-        <div>
-        <input type="checkbox" class="cat_checkbox" id="cat{{ key.id }}"/>
-        {% if value %}
-        <label for="cat{{ key.id }}">{{ key.title }}</label>
-        <i class="fa fa-plus fa-plusminus"></i>
-        <br />
-        {{ render_tree(value) }}
-        {% else %}
-        <label for="cat{{ key.id }}">{{ key.title }}</label> <br />
-        {% endif %}
-        </div>
-    {% endfor %}
-    </div>
+<div style="transition: all 1s;"
+     {% if d !=tree %}
+     class="pre-animation"
+     {% endif %}>
+  {% for key, value in d.items(): %}
+  <div>
+    <input type="checkbox" class="cat_checkbox" id="cat{{ key.id }}"/>
+    {% if value %}
+    <label for="cat{{ key.id }}">{{ key.title }}</label>
+    <i class="fa fa-plus fa-plusminus"></i>
+    <br/>
+    {{ render_tree(value) }}
+    {% else %}
+    <label for="cat{{ key.id }}">{{ key.title }}</label> <br/>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
 {% endmacro %}
 
 {% block title %}
 <title>главная</title>
-<link rel="stylesheet" href="static/css/card.css" />
+<link rel="stylesheet" href="static/css/card.css"/>
 <style>
-  .none_vendors {display: none !important;}
-  .none {display: none !important;}
-  .cian_none {color: #afafaf}
-  .cian_none:focus {
-      color: #afafaf !important;
-      border-color: #afafaf !important;
-      box-shadow: 0 0 0 .25rem rgba(175,175,175,.25) !important;
-      -webkit-box-shadow: 0 0 0 .25rem rgba(175,175,175,.25) !important;
+  .none_vendors {
+    display: none !important;
   }
+
+  .none {
+    display: none !important;
+  }
+
+  .cian_none {
+    color: #afafaf;
+  }
+
+  .cian_none:focus {
+    color: #afafaf !important;
+    border-color: #afafaf !important;
+    box-shadow: 0 0 0 .25rem rgba(175, 175, 175, .25) !important;
+    -webkit-box-shadow: 0 0 0 .25rem rgba(175, 175, 175, .25) !important;
+  }
+
   .listing {
     max-width: 100%;
     width: 100%;
     padding-left: 1em;
     position: relative;
   }
+
   .filter_block {
     box-shadow: 0 1px 4px 1px rgb(0 0 0 / 0.1);
     max-width: 100%;
     float: left;
     background-color: #fff;
-    position: -webkit-sticky;
-    position: -moz-sticky;
-    position: -o-sticky;
-    position: -ms-sticky;
     position: sticky;
     height: auto;
     align-self: flex-start;
@@ -57,6 +64,7 @@
     margin-bottom: 1em;
     border-radius: 12px;
   }
+
   .container_index {
     padding-top: 1em;
     max-width: 100%;
@@ -64,122 +72,160 @@
     display: grid;
     grid-template-columns: 1fr 4fr;
   }
+
   .filter_header {
     font-weight: 500;
     font-size: 140%;
   }
+
   .scrollable_checkboxes {
     display: block;
     width: 100%;
     overflow-y: scroll;
     height: 13em;
   }
-.scrollable_checkboxes input[type="checkbox"] {
-  display: none;
-}
 
-label {
+  .scrollable_checkboxes input[type="checkbox"] {
+    display: none;
+  }
+
+  label {
     padding: 6px;
-    padding-right: 0px;
-	cursor: pointer;
-	font-weight: 400;
-}
-
-.scrollable_checkboxes input[type="checkbox"] + label:before {
-  border: 1px solid #e4e9ed;
-  content: "\00a0"; /* No break space */
-  display: inline-block;
-  font: 16px/1em sans-serif;
-  height: 16px;
-  width: 16px;
-  padding: 0;
-  margin-right: .7em;
-  vertical-align: center;
-}
-
-.scrollable_checkboxes input[type="checkbox"]:checked + label:before {
-  background: #6ba45c;
-  color: #111;
-  content: "\2714";	/* Checkmark*/
-  text-align: center;
-}
-
-.scrollable_checkboxes input[type="checkbox"]:checked + label {
-  text-shadow: 0 0 0.05px black;
-}
-
-.inner {
-  transition: all 1s;
-}
-
-.pre-animation {
-  opacity: 0;
-  max-height: 0px;
-  pointer-events: none;
-}
-.pad_left {
-  padding-left: 10px;
-  opacity:1;
-  max-height: 300px;
-}
-.fa {
-  cursor: pointer;
-  transition: transform .75s
-} /* adjust to your needs */
-.rotate {transform: rotate(180deg)}
-.heart-none {opacity:0}
-.heart-visible {opacity: 1}
-.fa-solid {
-    animation: vis-heart .4s;
-}
-.fa-regular {
-    animation: vis-heart-2 .4s;
-}
-.red {
-  color: rgb(240, 0, 0) !important;
-}
-.fa-heart:hover {
-    transform: scale(2);
-    color: rgb(240, 0, 0);
-}
-@keyframes vis-heart {
-        0% {
-          transform: scale(0);
-        }
-        100% {
-          transform: scale(1.6);
-        }
-}
-@keyframes vis-heart-2 {
-        0% {
-          transform: scale(0);
-        }
-        100% {
-          transform: scale(1.6);
-        }
-}
-.fa-heart {
-    z-index: 99999999 !important;
+    padding-right: 0;
     cursor: pointer;
-    color: rgba(60, 60, 60, 1);
-    transition: transform 0.2s, opacity 0.3s, color 0.5s;
-    transform: scale(1.6);
+    font-weight: 400;
+  }
+
+  .scrollable_checkboxes input[type="checkbox"] + label:before {
+    border: 1px solid #e4e9ed;
+    content: "\00a0";
+    display: inline-block;
+    font: 16px/1em sans-serif;
+    height: 16px;
+    width: 16px;
+    padding: 0;
+    margin-right: .7em;
+    vertical-align: center;
+  }
+
+  .scrollable_checkboxes input[type="checkbox"]:checked + label:before {
+    background: #6ba45c;
+    color: #111;
+    content: "\2714";
+    text-align: center;
+  }
+
+  .scrollable_checkboxes input[type="checkbox"]:checked + label {
+    text-shadow: 0 0 0.05px black;
+  }
+
+  .inner {
+    transition: all 1s;
+  }
+
+  .pre-animation {
+    opacity: 0;
+    max-height: 0;
+    pointer-events: none;
+  }
+
+  .pad_left {
+    padding-left: 10px;
+    opacity: 1;
+    max-height: 300px;
+  }
+
+  .fa {
+    cursor: pointer;
+    transition: transform .75s;
+  }
+
+  .rotate {
+    transform: rotate(180deg);
+  }
+
+  .favorite-toggle {
     position: absolute;
     top: 1em;
-    right: 2em;
-}
-.modal-my-sizes {
+    right: 1em;
+    z-index: 99999999;
+
+    width: 36px;
+    height: 36px;
+    padding: 0;
+
+    border: none;
+    background: transparent;
+    outline: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+  }
+
+  .favorite-heart {
+    width: 28px;
+    height: 28px;
+    display: block;
+    overflow: visible;
+    transition: transform .2s ease, filter .2s ease;
+  }
+
+  .favorite-heart path {
+    fill: transparent;
+    stroke: #444;
+    stroke-width: 1.8;
+    transition: fill .2s ease, stroke .2s ease, transform .2s ease;
+  }
+
+  .favorite-toggle:hover .favorite-heart {
+    transform: scale(1.08);
+  }
+
+  .favorite-toggle:hover .favorite-heart path {
+    stroke: #e31b23;
+  }
+
+  .favorite-toggle.is-liked .favorite-heart path {
+    fill: #e31b23;
+    stroke: #e31b23;
+  }
+
+  .favorite-toggle.pop .favorite-heart {
+    animation: favorite-pop .32s ease;
+  }
+
+  @keyframes favorite-pop {
+    0% {
+      transform: scale(0.7);
+    }
+    45% {
+      transform: scale(1.28);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .containder {
+    cursor: pointer;
+  }
+
+  .modal-my-sizes {
     max-width: 60vw !important;
     max-height: 80vh !important;
-}
-.modal-dialog{
+  }
+
+  .modal-dialog {
     position: relative;
-    display: table; /* This is important */ 
-    overflow-y: auto;    
+    display: table;
+    overflow-y: auto;
     overflow-x: auto;
     width: auto;
-    min-width: 300px;   
-}
+    min-width: 300px;
+  }
 </style>
 {% endblock %}
 
@@ -204,59 +250,80 @@ label {
       {% for ven in vendors %}
       <input type="checkbox" id="ven{{ ven.id }}" class="cat_checkbox"/>
       {% if ven.title %}
-      <label for="ven{{ ven.id }}">{{ ven.title }} </label> <br />
+      <label for="ven{{ ven.id }}">{{ ven.title }} </label> <br/>
       {% else %}
-      <label for="ven{{ ven.id }}">{{ ven.name + ' ' + ven.surname }}</label> <br />
+      <label for="ven{{ ven.id }}">{{ ven.name + ' ' + ven.surname }}</label> <br/>
       {% endif %}
       {% endfor %}
     </div>
-    </div>
-<div class="container listing">
-  {% for i in range(data|length) %}
-  <div class="listing_row">
-    {% for j in range(data[i]|length) %}
-    {% set el = data[i][j] %}
+  </div>
+
+  <div class="container listing">
+    {% for i in range(data|length) %}
+    <div class="listing_row">
+      {% for j in range(data[i]|length) %}
+      {% set el = data[i][j] %}
+
       {% if j == 0 %}
-      <div class="containder first_in_row back_view">
-      {% elif j == 1 %}
-      <div class="containder second_in_row back_view">
-      {% else %}
-      <div class="containder third_in_row back_view">
-      {% endif %}
-    <div style="position:relative">
-      {% if el.id in liked %}
-      <i class="fa-solid fa-heart heart-none" data-like="{{ el.id }}" data-price="{{ el.price }}"></i>
-      <input hidden="hidden" type="checkbox" class="heart-checkbox" checked>
-      {% else %}
-      <i class="fa-regular fa-heart heart-none" data-like="{{ el.id }}" data-price="{{ el.price }}"></i>
-      <input hidden="hidden" type="checkbox" class="heart-checkbox">
-      {% endif %}
-    </div>    
-      <div class="containder_header">
-        <div class="containder_header_title">
-          <img src="static/img/{{ el.main_image }}" class="element__img" />
+      <div class="containder first_in_row back_view"
+           data-url="{{ url_for('catalog.product', id=el.id) }}">
+        {% elif j == 1 %}
+        <div class="containder second_in_row back_view"
+             data-url="{{ url_for('catalog.product', id=el.id) }}">
+          {% else %}
+          <div class="containder third_in_row back_view"
+               data-url="{{ url_for('catalog.product', id=el.id) }}">
+            {% endif %}
+
+            <div style="position: relative">
+              <button
+                type="button"
+                class="favorite-toggle {% if el.id in liked %}is-liked{% endif %}"
+                data-like="{{ el.id }}"
+                data-price="{{ el.price }}"
+                data-liked="{{ 1 if el.id in liked else 0 }}"
+                aria-label="Добавить в избранное"
+              >
+                <svg
+                  class="favorite-heart"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                     2 5.42 4.42 3 7.5 3
+                     c1.74 0 3.41.81 4.5 2.09
+                     C13.09 3.81 14.76 3 16.5 3
+                     19.58 3 22 5.42 22 8.5
+                     c0 3.78-3.4 6.86-8.55 11.54
+                     L12 21.35z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="containder_header">
+              <div class="containder_header_title">
+                <img src="static/img/{{ el.main_image }}" class="element__img"/>
+              </div>
+            </div>
+
+            <div class="containder_text">
+              <div class="containder_text__title">{{ el.title }}</div>
+              <div class="containder_text__price">от {{ el.price }} руб.</div>
+              <div class="containder_text__info">
+                <div class="info">фылвофыворшфв</div>
+                <div class="info">фылвофыворшфв</div>
+                <div class="info">фылвофыворшфв</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
         </div>
+        {% endfor %}
       </div>
-      <div class="containder_text">
-        <div class="containder_text__title">{{ el.title }}</div>
-        <div class="containder_text__price">от {{ el.price }} руб.</div>
-        <div class="containder_text__info">
-          <div class="info">фылвофыворшфв</div>
-          <div class="info">фылвофыворшфв</div>
-          <div class="info">фылвофыворшфв</div>
-        </div>
-      </div>
-  </div>
-  {% endfor %}
-  </div>
-  {% endfor %}
-</div>
-</div>
+    </div>
+
     <script>
       $(".containder").on("mouseenter", function () {
-        i = $('.fa-heart', $(this));
-        i.toggleClass('heart-none heart-visible');
-
         i = $(".containder_text__info", $(this));
         i.toggleClass("info_visible");
         $(this).addClass('front_view');
@@ -264,10 +331,6 @@ label {
       });
 
       $(".containder").on("mouseleave", function () {
-        i = $('.fa-heart', $(this));
-        i.removeClass('red');
-        i.toggleClass('heart-none heart-visible');
-
         i = $(".containder_text__info", $(this));
         i.toggleClass("info_visible");
         cont = $(this)
@@ -275,106 +338,123 @@ label {
         setTimeout(function () {
           cont.removeClass('front_view');
           cont.addClass('back_view');
-          cont.removeClass('another_view')
+          cont.removeClass('another_view');
         }, 400)
       });
     </script>
-  <!--<div class="row row-cols-md-3 mb-3 text-center">
-  {% for el in data %}
-      <div class="col">
-        <div class="card mb-4 rounded-3 shadow-sm" id="prod{{ el.id }}">
-          <div class="card-header py-3">
-            <h2 class="my-0 fw-normal">{{ el.title }}</h2>
+    <script>
+      $(document).on('click', '.favorite-toggle', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const toggle = $(this);
+        const productId = toggle.attr('data-like');
+        const price = toggle.attr('data-price');
+        const isLiked = Number(toggle.attr('data-liked')) === 1;
+
+        $.ajax({
+          url: "{{ url_for('catalog.toggle_favorite') }}",
+          type: "POST",
+          data: {
+            liked_id: productId,
+            liked_price: price,
+            action: isLiked ? "dislike" : "like"
+          },
+
+          success: function() {
+            const newState = !isLiked;
+
+            toggle.attr('data-liked', newState ? '1' : '0');
+            toggle.toggleClass('is-liked', newState);
+
+            toggle.removeClass('pop');
+            void toggle[0].offsetWidth;
+            toggle.addClass('pop');
+
+            count_liked();
+          },
+
+          error: function(xhr) {
+            console.error(
+              'Favorite error:',
+              xhr.status,
+              xhr.responseText
+            );
+          }
+        });
+      });
+    </script>
+    {% if ad %}
+    <button id="btn_hidden"
+            hidden="hidden"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#myModal"></button>
+
+    <div class="modal fade" id="myModal" role="dialog">
+      <div class="modal-dialog modal-my-sizes">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Реклама</h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"></button>
           </div>
-          <div class="card-body">
-            <div style="position:relative">
-                {% if el.id in liked %}
-                <i class="fa-solid fa-heart heart-none" data-like="{{ el.id }}" data-price="{{ el.price }}"></i>
-                <input hidden="hidden" type="checkbox" class="heart-checkbox" checked>
-                {% else %}
-                <i class="fa-regular fa-heart heart-none" data-like="{{ el.id }}" data-price="{{ el.price }}"></i>
-                <input hidden="hidden" type="checkbox" class="heart-checkbox">
-                {% endif %}
-                <a href="/product/{{ el.id }}"><img class="img-fluid" src="static/img/{{ el.main_image }}" alt="{{ el.main_image }}"></a>
-            </div>
-            <ul class="list-unstyled mt-3 mb-4">
-                {% if el.price != -1 %}
-              <li>от {{ el.price }} руб.</li>
-              <li data-vendors="{{ el.vendors }}" data-cats="{{ el.cat }}" data-price="{{ el.price }}" class="vendors_li">
-                {% if el.main_logo %}
-              <a href="/cart"> <img width="30" height="30" src="/static/img/{{ el.main_logo }}"
-                                    alt="{{ el.main_logo }}"></a>
-                {% endif %}
-                Продавец {{ el.vendor }}</li>
-                {% endif %}
-              <li>
-                {% if el.logos %}
-                {% set b = el.logos.strip('"[').strip(']"').replace("'", "").split() %}
-                {% for i in b %}
-                {% set logo = i.strip(',') %}
-                <a href="/product/{{ el.id }}"><img src="/static/img/{{ logo }}" alt="{{ logo }}" width="30" height="30"></a>
-                {% endfor %}
-                {% endif %}
-              </li>
-              <li>{{ el.description }}</li>
-            </ul>
+          <div class="modal-body">
+            {% if ad.format == 'video' %}
+            <video controls autoplay muted style="max-width: 100%; max-height: 80vh;">
+              <source src="static/ads/{{ ad.filename }}">
+            </video>
+            {% else %}
+            <img src="static/ads/{{ ad.filename }}"
+                 style="max-width: 100%; max-height: 80vh;">
+            {% endif %}
           </div>
         </div>
       </div>
-  {% endfor %}
-  </div>-->
-<button id="btn_hidden" hidden="hidden" type="button" data-bs-toggle="modal" data-bs-target="#myModal"></button>
-<div class="modal fade" id="myModal" role="dialog">
-        <div class="modal-dialog modal-my-sizes">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Реклама</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  {% if ad.format == 'video' %}
-                  <video controls autoplay muted style="max-width: 100%; max-height: 80vh;">
-                    <source src="static/ads/{{ ad.filename }}">
-                  </video>
-                  {% else %}
-                  <img src="static/ads/{{ ad.filename }}" style="max-width: 100%; max-height: 80vh;">
-                  {% endif %}
-                </div>
-            </div>
-        </div>
     </div>
-<input hidden="hidden" value="{{ all_prices }}" id="prices_hidden">
-<script>
-  function isNumberKey(evt) {
-  var charCode = (evt.which) ? evt.which : evt.keyCode
-  if (charCode > 31 && (charCode < 48 || charCode > 57))
-    return false;
-  return true;
-}
-//$(function() {
-//    $('#btn_hidden').click();
-//});
-</script>
-<script>
-    $(document).on("click", ".fa-plusminus", function() {
+    {% endif %}
+
+    <input hidden="hidden" value="{{ all_prices }}" id="prices_hidden">
+
+    <script>
+      function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+          return false;
+        return true;
+      }
+
+      // Когда захочешь снова включить автоматический popup рекламы:
+      // $(function() {
+      //   $('#btn_hidden').click();
+      // });
+    </script>
+
+    <script>
+      $(document).on("click", ".fa-plusminus", function () {
         li = $(this).closest('div')
         child_ul = li.children('div')
         child_ul.toggleClass('pre-animation')
         child_ul.toggleClass('pad_left')
         $(this).toggleClass('fa-plus fa-minus rotate')
-  });
-</script>
-<script>
-  $(document).on("click", ".cat_checkbox", function() {
+      });
+    </script>
+
+    <script>
+      $(document).on("click", ".cat_checkbox", function () {
         var cats = [];
-        $('#scrollable_checkboxes_cats input:checked').each(function() {
-            cats.push(Number(this.id.slice(3)));
+        $('#scrollable_checkboxes_cats input:checked').each(function () {
+          cats.push(Number(this.id.slice(3)));
         });
+
         var vend = [];
-        $('#scrollable_checkboxes_vendors input:checked').each(function() {
-            vend.push(Number(this.id.slice(3)));
+        $('#scrollable_checkboxes_vendors input:checked').each(function () {
+          vend.push(Number(this.id.slice(3)));
         });
-        $('.vendors_li').each(function() {
+
+        $('.vendors_li').each(function () {
           vendors = this.getAttribute('data-vendors').slice(1, -1).split(', ');
           categories = this.getAttribute('data-cats').split(' ');
           set1 = new Set(vendors);
@@ -383,71 +463,56 @@ label {
           set4 = new Set(cats);
           intersection = [...set1].filter(x => set2.has(Number(x)));
           intersection2 = [...set3].filter(x => set4.has(Number(x)));
-          if ((intersection.length > 0 || vend.length == 0) && (intersection2.length > 0 || cats.length == 0)) {
-              this.closest('.col').classList.remove("none_vendors");
+
+          if (
+            (intersection.length > 0 || vend.length == 0)
+            && (intersection2.length > 0 || cats.length == 0)
+          ) {
+            this.closest('.col').classList.remove("none_vendors");
+          } else {
+            this.closest('.col').classList.add("none_vendors");
           }
-          else {
-              this.closest('.col').classList.add("none_vendors");
-          }
-        var event = new Event('input');
-        $(".priceForm input")[0].dispatchEvent(event);
+
+          var event = new Event('input');
+          $(".priceForm input")[0].dispatchEvent(event);
+        });
       });
-  });
-</script>
-<script>
-  $(".priceForm input").on("input", function() {
-      start = Number($("#start").val());
-      end = Number($("#end").val());
-      if (!end) end = 9999999999;
-      prices = $('#prices_hidden').val()
-      prices1 = prices.slice(1, -1).split(', ');
-      prices2 = prices.slice(1, -1).split(', ');
-      prices1.push(end)
-      prices2.push(start)
-      if ((Math.max.apply(null, prices2) == start) || (Math.min.apply(null, prices1) == end) || (start > end)) {
+    </script>
+
+    <script>
+      $(".priceForm input").on("input", function () {
+        start = Number($("#start").val());
+        end = Number($("#end").val());
+
+        if (!end) end = 9999999999;
+
+        prices = $('#prices_hidden').val()
+        prices1 = prices.slice(1, -1).split(', ');
+        prices2 = prices.slice(1, -1).split(', ');
+        prices1.push(end)
+        prices2.push(start)
+
+        if (
+          (Math.max.apply(null, prices2) == start)
+          || (Math.min.apply(null, prices1) == end)
+          || (start > end)
+        ) {
           $(".priceForm input").addClass('cian_none')
           return false
-      }
-      else {
+        } else {
           $(".priceForm input").removeClass('cian_none')
-      }
-      $('.vendors_li').each(function() {
+        }
+
+        $('.vendors_li').each(function () {
           price = Number(this.getAttribute('data-price'));
+
           if ((start > price) || (price > end)) {
-              this.closest('.col').classList.add("none");
+            this.closest('.col').classList.add("none");
+          } else if ((start <= price) && (price <= end)) {
+            this.closest('.col').classList.remove("none");
           }
-          else if ((start <= price) && (price <= end)) {
-              this.closest('.col').classList.remove("none");
-          }
+        });
       });
-  });
-</script>
-<script>
-$('.fa-heart').on('click', function(){
-  parent = $(this).closest('div')
-  checkbox = $('.heart-checkbox', parent)
-  if (checkbox.is(':checked')){
-	  checkbox.prop('checked', false);
-    $.ajax({
-    data : {  liked_id: $(this).data('like'), 
-              liked_price: $(this).data('price'),
-              action: "dislike"},
-    type : 'POST',
-    url : '/kek'
-  });
-} else {
-	checkbox.prop('checked', true);
-  $(this).addClass('red');
-  $.ajax({
-    data : {  liked_id: $(this).data('like'), 
-              liked_price: $(this).data('price'),
-              action: "like"},
-    type : 'POST',
-    url : '/kek'
-  });
-}
-$(this).toggleClass('fa-solid fa-regular');
-count_liked()
-})
-</script>
-{% endblock %}
+    </script>
+
+    {% endblock %}

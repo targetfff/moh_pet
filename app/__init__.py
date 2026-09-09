@@ -18,14 +18,21 @@ def create_app():
     mail.init_app(app)
     login_manager.init_app(app)
 
+    login_manager.login_view = "auth.login"
+
     from .models import Users
 
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(Users, int(user_id))
 
+    from .auth import auth_bp
     from .catalog import catalog_bp
+    from .legit import legit_bp
 
+    app.register_blueprint(auth_bp)
     app.register_blueprint(catalog_bp)
+    app.register_blueprint(legit_bp)
 
     return app
+
