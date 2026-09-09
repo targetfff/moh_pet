@@ -29,8 +29,6 @@ mail = Mail(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 app.app_context().push()
-print(app.template_folder)
-print(app.root_path)
 
 class Products(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -257,7 +255,6 @@ def index():
     else:
         liked = []
     data = list(chunks(products, 3))
-    print(data)
     ads = Advertisement.query.all()
     return render_template('index.html', cats=cats, data=data, ad=random.choice(ads),
                            vendors=vendors, tree=tree, all_prices=prices1, liked=liked)
@@ -292,10 +289,8 @@ def ad_delete():
         return redirect('/')
     ads = Advertisement.query.all()
     if request.method == 'POST':
-        print(request.form)
         ad_to_remove = int(request.form['ad_to_remove'])
         a = Advertisement.query.filter(Advertisement.id == ad_to_remove).first()
-        print(a.id, a.title, a.frame)
         Advertisement.query.filter(Advertisement.id == ad_to_remove).delete()
         db.session.commit()
         return redirect('/ad_delete')
@@ -413,7 +408,6 @@ def product(id):
                     li1.pop(0)
                 current_user.recent = ' '.join(li1)
             else:
-                print(str(id))
                 current_user.recent = str(id)
             db.session.commit()
     else:
@@ -879,7 +873,6 @@ def delete():
         return redirect('/')
     try:
         if request.method == 'POST':
-            print(request.method)
             product_to_delete = int(request.form['product_to_delete'])
             Products.query.filter(Products.id == product_to_delete).delete()
             Offers.query.filter(Offers.product_id == product_to_delete).delete()
@@ -895,7 +888,6 @@ def delete():
                             cart1.remove(i)
                             u.cart = ', '.join(cart1)
             db.session.commit()
-            print('fuck')
             return 'nothing'
     except Exception as e:
         print(e)
