@@ -31,7 +31,9 @@ def create_app():
     from .catalog import catalog_bp
     from .legit import legit_bp
     from .seller import seller_bp
+    from .admin import admin_bp
 
+    app.register_blueprint(admin_bp)
     app.register_blueprint(account_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(catalog_bp)

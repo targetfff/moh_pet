@@ -10,6 +10,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
 from app.models import Users
+from app.services.email import (
+    get_email_from_confirmation_token,
+    send_confirmation_email,
+)
 
 from . import auth_bp
 
@@ -33,10 +37,11 @@ def login():
             )
 
             next_page = request.args.get("next")
+
             if (
-                next_page
-                and next_page.startswith("/")
-                and not next_page.startswith("//")
+                    next_page
+                    and next_page.startswith("/")
+                    and not next_page.startswith("//")
             ):
                 return redirect(next_page)
 
@@ -112,3 +117,61 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for("catalog.index"))
+
+
+@auth_bp.route("/resend-confirmation")
+@login_required
+def resend_confirmation():
+    if current_user.confirmed:
+        return redirect(url_for("catalog.index"))
+
+    send_confirmation_email(current_user.email)
+
+    flash(
+        "Новое письмо с подтверждением "
+        "отправлено на вашу электронную почту."
+    )
+
+    return redirect(url_for("auth.unconfirmed"))
+
+
+@auth_bp.route("/confirm/<confirmation_token>")
+def confirm_email(confirmation_token):
+    email = get_email_from_confirmation_token(
+        confirmation_token
+    )
+
+    if email is None:
+        return render_template(
+            "invalid_token.html"
+        ), 400
+
+    user = Users.query.filter_by(
+        email=email
+    ).first_or_404()
+
+    if user.confirmed:
+        flash(
+            "Адрес электронной почты уже подтвержден."
+        )
+        return redirect(url_for("catalog.index"))
+
+    user.confirmed = True
+    db.session.commit()
+
+    flash(
+        "Адрес электронной почты подтвержден."
+    )
+
+    return redirect(url_for("auth.login"))
+
+
+@auth_bp.route("/unconfirmed")
+def unconfirmed():
+    if current_user.is_anonymous:
+        return redirect(url_for("auth.login"))
+
+    if current_user.confirmed:
+        return redirect(url_for("catalog.index"))
+
+    return render_template("unconfirmed.html")

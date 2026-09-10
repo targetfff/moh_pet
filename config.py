@@ -22,3 +22,6 @@ class Config:
     MAIL_USE_SSL = False
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    AD_INTERVAL_SECONDS = int(
+        os.getenv("AD_INTERVAL_SECONDS", 1800)
+    )

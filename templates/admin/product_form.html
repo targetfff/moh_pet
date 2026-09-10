@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if mode == "create" %}
+<title>Добавление товара</title>
+{% else %}
+<title>Изменение товара</title>
+{% endif %}
+
+<style>
+  .product-form {
+    max-width: 900px;
+  }
+
+  .form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5em;
+    margin-bottom: 1.5em;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .1);
+  }
+
+  .category-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .5em;
+  }
+
+  .existing-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1em;
+  }
+
+  .existing-image {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: .75em;
+  }
+
+  .existing-image img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    display: block;
+    margin-bottom: .5em;
+  }
+
+  .suggestion-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: .75em;
+    margin-top: 1em;
+  }
+
+  .suggestion-preview img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+</style>
+{% endblock %}
+
+
+{% block body %}
+<div class="container product-form">
+
+  {% if mode == "create" %}
+  <h1 class="mb-4">Добавление товара</h1>
+  {% else %}
+  <h1 class="mb-4">
+    Изменение товара
+  </h1>
+  {% endif %}
+
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-info">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+
+  <form method="post"
+        enctype="multipart/form-data">
+
+    {% if mode == "create" %}
+    <div class="form-section">
+      <h4>Одобренное предложение</h4>
+
+      <p class="text-muted">
+        Можно создать товар с нуля или выбрать предложение
+        продавца. Его название и фотографии будут использованы
+        как заготовка.
+      </p>
+
+      <select class="form-select"
+              name="suggestion_id"
+              id="suggestion_id">
+
+        <option value="0"
+                data-title="">
+          Создать товар с нуля
+        </option>
+
+        {% for suggestion in approved_suggestions %}
+        <option value="{{ suggestion.id }}"
+                data-title="{{ suggestion.title|e }}"
+                {% if selected_suggestion
+                and selected_suggestion.id == suggestion.id %}
+                selected
+                {% endif %}>
+          {{ suggestion.title }}
+        </option>
+        {% endfor %}
+      </select>
+
+      {% if selected_suggestion %}
+      <div class="suggestion-preview">
+        {% set suggestion_photos =
+        selected_suggestion.photos
+        .strip('[')
+        .strip(']')
+        .replace("'", "")
+        .replace(",", "")
+        .split() %}
+
+        {% for photo in suggestion_photos %}
+        <img src="{{ url_for(
+                           'static',
+                           filename='img/' + photo
+                         ) }}"
+             alt="">
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+
+    <div class="form-section">
+      <h4>Основная информация</h4>
+
+      <div class="form-floating mb-3">
+        <input class="form-control"
+               type="text"
+               name="title"
+               id="title"
+               placeholder="Название"
+               value="{% if product %}{{ product.title }}{% elif selected_suggestion %}{{ selected_suggestion.title }}{% endif %}"
+               required>
+
+        <label for="title">
+          Название
+        </label>
+      </div>
+
+
+      <div class="form-floating mb-3">
+        <input class="form-control"
+               type="text"
+               name="description"
+               id="description"
+               placeholder="Краткое описание"
+               value="{% if product %}{{ product.description or '' }}{% endif %}"
+               required>
+
+        <label for="description">
+          Краткое описание
+        </label>
+      </div>
+
+
+      <div class="form-floating">
+        <textarea class="form-control"
+                  name="full_description"
+                  id="full_description"
+                  placeholder="Полное описание"
+                  style="min-height: 160px">{% if product %}{{ product.full_description or '' }}{% endif %}</textarea>
+
+        <label for="full_description">
+          Полное описание
+        </label>
+      </div>
+    </div>
+
+
+    <div class="form-section">
+      <h4>Категории</h4>
+
+      {% if categories %}
+      <div class="category-list">
+        {% for category in categories %}
+        <label class="form-check">
+          <input class="form-check-input"
+                 type="checkbox"
+                 name="categories"
+                 value="{{ category.id }}"
+                 {% if category.id|string in selected_categories %}
+                 checked
+                 {% endif %}>
+
+          <span class="form-check-label">
+                {{ category.title }}
+              </span>
+        </label>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-muted">
+        Категории ещё не созданы.
+      </div>
+      {% endif %}
+    </div>
+
+
+    {% if mode == "edit" and existing_images %}
+    <div class="form-section">
+      <h4>Текущие изображения</h4>
+
+      <p class="text-muted">
+        Можно выбрать главное изображение или отметить
+        ненужные изображения для удаления.
+      </p>
+
+      <div class="existing-images">
+        {% for image in existing_images %}
+        <div class="existing-image">
+          <img src="{{ url_for(
+                           'static',
+                           filename='img/' + image
+                         ) }}"
+               alt="">
+
+          <label class="form-check mb-2">
+            <input class="form-check-input"
+                   type="radio"
+                   name="main_existing"
+                   value="{{ image }}"
+                   {% if image == product.main_image %}
+                   checked
+                   {% endif %}>
+
+            <span class="form-check-label">
+                  Главное
+                </span>
+          </label>
+
+          <label class="form-check">
+            <input class="form-check-input"
+                   type="checkbox"
+                   name="delete_images"
+                   value="{{ image }}">
+
+            <span class="form-check-label text-danger">
+                  Удалить
+                </span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+
+    <div class="form-section">
+      <h4>Новые изображения</h4>
+
+      <div class="mb-3">
+        <label class="form-label"
+               for="main_image">
+          Новое главное изображение
+        </label>
+
+        <input class="form-control"
+               type="file"
+               accept="image/*"
+               name="main_image"
+               id="main_image">
+      </div>
+
+      <div>
+        <label class="form-label"
+               for="images">
+          Дополнительные изображения
+        </label>
+
+        <input class="form-control"
+               type="file"
+               multiple
+               accept="image/*"
+               name="images[]"
+               id="images">
+      </div>
+    </div>
+
+
+    <div class="d-flex gap-2 mb-5">
+      <button class="btn btn-success"
+              type="submit">
+        {% if mode == "create" %}
+        Создать товар
+        {% else %}
+        Сохранить изменения
+        {% endif %}
+      </button>
+
+      <a class="btn btn-outline-primary"
+         href="{{ url_for('admin.products') }}">
+        Отмена
+      </a>
+    </div>
+
+  </form>
+</div>
+
+
+{% if mode == "create" %}
+<script>
+  const suggestionSelect =
+    document.getElementById('suggestion_id');
+
+  const titleInput =
+    document.getElementById('title');
+
+  suggestionSelect.addEventListener(
+    'change',
+    function () {
+      const option =
+        this.options[this.selectedIndex];
+
+      const suggestionId =
+        Number(option.value);
+
+      if (suggestionId > 0) {
+        window.location.href =
+          "{{ url_for('admin.create_product') }}" +
+          "?suggestion_id=" +
+          suggestionId;
+      } else {
+        window.location.href =
+          "{{ url_for('admin.create_product') }}";
+      }
+    }
+  );
+</script>
+{% endif %}
+{% endblock %}

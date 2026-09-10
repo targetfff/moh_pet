@@ -54,19 +54,22 @@
 
   .itc-slider-btn-prev::before {
     background-image: url("{{ url_for('static', filename='svg/left-arrow-svgrepo-com.svg') }}");
-    filter: invert(49%) sepia(3%) saturate(16%) hue-rotate(340deg) brightness(94%) contrast(81%);
+    filter: invert(49%) sepia(3%) saturate(16%) hue-rotate(340deg)
+    brightness(94%) contrast(81%);
     transition: all .3s;
   }
 
   .itc-slider-btn-next::before {
     background-image: url("{{ url_for('static', filename='svg/right-arrow-svgrepo-com.svg') }}");
-    filter: invert(49%) sepia(3%) saturate(16%) hue-rotate(340deg) brightness(94%) contrast(81%);
+    filter: invert(49%) sepia(3%) saturate(16%) hue-rotate(340deg)
+    brightness(94%) contrast(81%);
     transition: all .3s;
   }
 
   .itc-slider-btn-next:hover::before,
   .itc-slider-btn-prev:hover::before {
-    filter: invert(100%) sepia(99%) saturate(4%) hue-rotate(258deg) brightness(106%) contrast(100%) !important;
+    filter: invert(100%) sepia(99%) saturate(4%) hue-rotate(258deg)
+    brightness(106%) contrast(100%) !important;
   }
 
   .itc-slider-wrapper {
@@ -174,62 +177,23 @@
 
   <h1 style="margin-bottom: .5em;">Администрация МОХ</h1>
 
-  <h4 class="mb-4">Управление базой товаров</h4>
+  <h4 class="mb-4">Администрирование</h4>
 
-  <div style="display: flex; gap: 1em; flex-direction: column;">
-    <div>
-      <a class="me-2 btn btn-outline-primary"
-         href="/create"
-         style="font-size: 20px">
-        Добавить товар
-      </a>
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <a class="btn btn-outline-primary"
+       href="{{ url_for('admin.products') }}">
+      Товары
+    </a>
 
-      <a class="me-2 btn btn-outline-primary"
-         href="/delete"
-         style="font-size: 20px">
-        Удалить товар
-      </a>
+    <a class="btn btn-outline-primary"
+       href="{{ url_for('admin.categories') }}">
+      Категории
+    </a>
 
-      <a class="me-2 btn btn-outline-primary"
-         href="/change"
-         style="font-size: 20px">
-        Изменить товар
-      </a>
-    </div>
-
-    <div>
-      <a class="me-2 btn btn-outline-primary"
-         href="/category"
-         style="font-size: 20px">
-        Добавить категорию
-      </a>
-
-      <a class="me-2 btn btn-outline-primary"
-         href="/category_delete"
-         style="font-size: 20px">
-        Удалить категорию
-      </a>
-
-      <a class="me-2 btn btn-outline-primary"
-         href="/category_change"
-         style="font-size: 20px">
-        Изменить категорию
-      </a>
-    </div>
-
-    <div>
-      <a class="me-2 btn btn-outline-primary"
-         href="/ad_create"
-         style="font-size: 20px">
-        Добавить рекламу
-      </a>
-
-      <a class="me-2 btn btn-outline-primary"
-         href="/ad_delete"
-         style="font-size: 20px">
-        Удалить рекламу
-      </a>
-    </div>
+    <a class="btn btn-outline-primary"
+       href="{{ url_for('admin.ads') }}">
+      Реклама
+    </a>
   </div>
 
   <h4 style="margin-top: 1em;">Заявки продавцов</h4>
@@ -378,12 +342,14 @@
             <br>
 
             <button class="submit btn btn-success"
-                    type="button">
+                    type="button"
+                    data-url="{{ url_for('admin.accept_trade_request', request_id=req.id) }}">
               Принять заявку
             </button>
 
             <button class="reject btn btn-danger"
-                    type="button">
+                    type="button"
+                    data-url="{{ url_for('admin.reject_trade_request', request_id=req.id) }}">
               Отклонить заявку
             </button>
           </form>
@@ -395,43 +361,29 @@
 
 
   <script>
-    $(function () {
-      $('.submit').on('click', function () {
-        const frmID = $(this).closest('form').attr('id');
-        const frmDetails = $('#' + frmID);
-        const data = frmDetails.serialize();
+    $(document).on('click', '.submit, .reject', function () {
+      const button = $(this);
+      const card = button.closest('.grid-item');
 
-        $.ajax({
-          data: data,
-          type: 'POST',
-          url: '/submit'
-        });
+      $.ajax({
+        url: button.data('url'),
+        type: 'POST',
 
-        $(this)
-          .closest('.grid-item')
-          .fadeOut(800, function () {
+        success: function (response) {
+          console.log('Admin trade request:', response);
+
+          card.fadeOut(400, function () {
             $(this).remove();
           });
-      });
-    });
+        },
 
-    $(function () {
-      $('.reject').on('click', function () {
-        const frmID = $(this).closest('form').attr('id');
-        const frmDetails = $('#' + frmID);
-        const data = frmDetails.serialize();
-
-        $.ajax({
-          data: data,
-          type: 'POST',
-          url: '/reject'
-        });
-
-        $(this)
-          .closest('.grid-item')
-          .fadeOut(800, function () {
-            $(this).remove();
-          });
+        error: function (xhr) {
+          console.error(
+            'Admin trade request error:',
+            xhr.status,
+            xhr.responseText
+          );
+        }
       });
     });
   </script>
@@ -558,12 +510,14 @@
             <br>
 
             <button class="submit2 btn btn-success"
-                    type="button">
+                    type="button"
+                    data-url="{{ url_for('admin.accept_product_suggestion', suggestion_id=sug.id) }}">
               Принять заявку
             </button>
 
             <button class="reject2 btn btn-danger"
-                    type="button">
+                    type="button"
+                    data-url="{{ url_for('admin.reject_product_suggestion', suggestion_id=sug.id) }}">
               Отклонить заявку
             </button>
           </form>
@@ -575,43 +529,29 @@
 
 
   <script>
-    $(function () {
-      $('.submit2').on('click', function () {
-        const frmID = $(this).closest('form').attr('id');
-        const frmDetails = $('#' + frmID);
-        const data = frmDetails.serialize();
+    $(document).on('click', '.submit2, .reject2', function () {
+      const button = $(this);
+      const card = button.closest('.grid-item');
 
-        $.ajax({
-          data: data,
-          type: 'POST',
-          url: '/submit2'
-        });
+      $.ajax({
+        url: button.data('url'),
+        type: 'POST',
 
-        $(this)
-          .closest('.grid-item')
-          .fadeOut(800, function () {
+        success: function (response) {
+          console.log('Admin product suggestion:', response);
+
+          card.fadeOut(400, function () {
             $(this).remove();
           });
-      });
-    });
+        },
 
-    $(function () {
-      $('.reject2').on('click', function () {
-        const frmID = $(this).closest('form').attr('id');
-        const frmDetails = $('#' + frmID);
-        const data = frmDetails.serialize();
-
-        $.ajax({
-          data: data,
-          type: 'POST',
-          url: '/reject2'
-        });
-
-        $(this)
-          .closest('.grid-item')
-          .fadeOut(800, function () {
-            $(this).remove();
-          });
+        error: function (xhr) {
+          console.error(
+            'Admin product suggestion error:',
+            xhr.status,
+            xhr.responseText
+          );
+        }
       });
     });
   </script>

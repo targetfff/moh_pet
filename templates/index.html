@@ -343,7 +343,18 @@
       });
     </script>
     <script>
-      $(document).on('click', '.favorite-toggle', function(event) {
+      $(document).on('click', '.containder', function (event) {
+        if ($(event.target).closest(
+          '.favorite-toggle, button, a, input, label, select, textarea'
+        ).length) {
+          return;
+        }
+
+        window.location.href = $(this).data('url');
+      });
+    </script>
+    <script>
+      $(document).on('click', '.favorite-toggle', function (event) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -361,7 +372,7 @@
             action: isLiked ? "dislike" : "like"
           },
 
-          success: function() {
+          success: function () {
             const newState = !isLiked;
 
             toggle.attr('data-liked', newState ? '1' : '0');
@@ -374,7 +385,7 @@
             count_liked();
           },
 
-          error: function(xhr) {
+          error: function (xhr) {
             console.error(
               'Favorite error:',
               xhr.status,
@@ -426,10 +437,9 @@
         return true;
       }
 
-      // Когда захочешь снова включить автоматический popup рекламы:
-      // $(function() {
-      //   $('#btn_hidden').click();
-      // });
+      $(function () {
+        $('#btn_hidden').click();
+      });
     </script>
 
     <script>

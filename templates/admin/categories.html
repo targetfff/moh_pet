@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Управление категориями</title>
+
+<style>
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1em;
+    margin-bottom: 2em;
+  }
+
+  .category-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .1);
+  }
+
+  .category-actions {
+    display: flex;
+    gap: .5em;
+    flex-wrap: wrap;
+  }
+</style>
+{% endblock %}
+
+
+{% block body %}
+<div class="container">
+
+  <div class="admin-header">
+    <div>
+      <h1>Категории</h1>
+      <div class="text-muted">
+        Создание, изменение и удаление категорий
+      </div>
+    </div>
+
+    <a class="btn btn-success"
+       href="{{ url_for('admin.create_category') }}">
+      Добавить категорию
+    </a>
+  </div>
+
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-info">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+
+  {% if categories %}
+  <div class="table-responsive category-table">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Название</th>
+        <th>Родитель</th>
+        <th>Товаров</th>
+        <th>Действия</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      {% for category in categories %}
+      <tr>
+        <td>{{ category.id }}</td>
+
+        <td>
+          {{ category.title }}
+        </td>
+
+        <td>
+          {{ parent_titles.get(
+          category.parent,
+          "Неизвестно"
+          ) }}
+        </td>
+
+        <td>
+          {{ product_counts.get(
+          category.id,
+          0
+          ) }}
+        </td>
+
+        <td>
+          <div class="category-actions">
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{{ url_for(
+                         'admin.edit_category',
+                         category_id=category.id
+                     ) }}">
+              Изменить
+            </a>
+
+            <form method="post"
+                  action="{{ url_for(
+                            'admin.delete_category',
+                            category_id=category.id
+                        ) }}"
+                  onsubmit="return confirm(
+                          'Удалить категорию «{{ category.title|e }}»? Подкатегории будут перенесены уровнем выше.'
+                        );">
+
+              <button class="btn btn-sm btn-outline-danger"
+                      type="submit">
+                Удалить
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="text-muted">
+    Категорий пока нет.
+  </div>
+  {% endif %}
+
+
+  <div class="mt-4 mb-5">
+    <a class="btn btn-outline-primary"
+       href="{{ url_for('account.account') }}">
+      Вернуться в личный кабинет
+    </a>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 import random
+import time
 
-from flask import render_template, request
+from flask import current_app, render_template, request, session
 from flask_login import current_user, login_required
 
 from app.extensions import db
@@ -21,13 +22,21 @@ def index():
     prices = Offers.query.with_entities(Offers.price).all()
     prices = [price[0] for price in prices]
 
-    products = Products.query.order_by(Products.date.desc()).all()
+    products = Products.query.order_by(
+        Products.date.desc()
+    ).all()
 
-    vendor_ids = Offers.query.with_entities(Offers.vendor_id).all()
+    vendor_ids = Offers.query.with_entities(
+        Offers.vendor_id
+    ).all()
+
     vendors = set()
 
     for vendor_id in vendor_ids:
-        vendor = Vendors.query.filter(Vendors.id == vendor_id[0]).first()
+        vendor = Vendors.query.filter(
+            Vendors.id == vendor_id[0]
+        ).first()
+
         if vendor:
             vendors.add(vendor)
 
@@ -41,6 +50,7 @@ def index():
     )
 
     all_categories = Categories.query.all()
+
     parent_categories = Categories.query.filter(
         Categories.parent == 0
     ).all()
@@ -69,22 +79,73 @@ def index():
         node = tree_find(parent, tree)
 
         if node:
-            node[parent] = {child: {} for child in children}
+            node[parent] = {
+                child: {}
+                for child in children
+            }
         else:
-            tree[parent] = {child: {} for child in children}
+            tree[parent] = {
+                child: {}
+                for child in children
+            }
 
-    if current_user.is_authenticated and current_user.cart:
+    if (
+            current_user.is_authenticated
+            and current_user.cart
+    ):
         liked = [
             int(item.split()[0])
-            for item in current_user.cart.strip(", ").split(", ")
+            for item in current_user.cart
+            .strip(", ")
+            .split(", ")
         ]
     else:
         liked = []
 
-    data = list(chunks(products, 3))
+    data = list(
+        chunks(products, 3)
+    )
 
-    ads = Advertisement.query.all()
-    ad = random.choice(ads) if ads else None
+    # -------------------------------------------------
+    # Advertisement
+    # -------------------------------------------------
+
+    ad = None
+
+    ad_interval = current_app.config["AD_INTERVAL_SECONDS"]
+
+    now = time.time()
+
+    last_ad_time = session.get(
+        "last_ad_time",
+        0,
+    )
+
+    last_ad_id = session.get(
+        "last_ad_id"
+    )
+
+    if now - last_ad_time >= ad_interval:
+        ads = Advertisement.query.all()
+
+        if ads:
+            # Если реклам несколько, не показываем
+            # ту же самую два раза подряд.
+            if len(ads) > 1 and last_ad_id is not None:
+                available_ads = [
+                    advertisement
+                    for advertisement in ads
+                    if advertisement.id != last_ad_id
+                ]
+            else:
+                available_ads = ads
+
+            ad = random.choice(
+                available_ads
+            )
+
+            session["last_ad_time"] = now
+            session["last_ad_id"] = ad.id
 
     return render_template(
         "index.html",

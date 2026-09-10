@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Управление товарами</title>
+
+<style>
+  .admin-products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1em;
+    margin-bottom: 2em;
+  }
+
+  .approved-suggestions {
+    margin-bottom: 2.5em;
+  }
+
+  .suggestion-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1em;
+  }
+
+  .suggestion-card {
+    padding: 1.2em;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .12);
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5em;
+  }
+
+  .admin-product-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .12);
+  }
+
+  .admin-product-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    display: block;
+  }
+
+  .admin-product-body {
+    padding: 1em;
+  }
+
+  .admin-product-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5em;
+  }
+</style>
+{% endblock %}
+
+
+{% block body %}
+<div class="container">
+
+  <div class="admin-products-header">
+    <div>
+      <h1>Управление товарами</h1>
+      <div class="text-muted">
+        Создание, просмотр, изменение и удаление товаров
+      </div>
+    </div>
+
+    <a class="btn btn-success"
+       href="{{ url_for('admin.create_product') }}">
+      Добавить товар
+    </a>
+  </div>
+
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-info">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+
+  {% if approved_suggestions %}
+  <section class="approved-suggestions">
+    <h3>Одобренные предложения</h3>
+
+    <p class="text-muted">
+      Эти предложения уже одобрены, но карточка товара
+      для них ещё не создана.
+    </p>
+
+    <div class="suggestion-list">
+      {% for suggestion in approved_suggestions %}
+      <div class="suggestion-card">
+        <h5>{{ suggestion.title }}</h5>
+
+        <a class="btn btn-outline-success"
+           href="{{ url_for(
+                   'admin.create_product',
+                   suggestion_id=suggestion.id
+               ) }}">
+          Создать товар
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+
+  <h3 class="mb-3">Все товары</h3>
+
+  {% if products %}
+  <div class="products-grid">
+
+    {% for product in products %}
+    <div class="admin-product-card">
+
+      <img src="{{ url_for(
+                       'static',
+                       filename='img/' + product.main_image
+                     ) }}"
+           alt="{{ product.title }}">
+
+      <div class="admin-product-body">
+        <h5>{{ product.title }}</h5>
+
+        <p class="text-muted">
+          {{ product.description or "" }}
+        </p>
+
+        <div class="admin-product-actions">
+          <a class="btn btn-outline-primary"
+             href="{{ url_for(
+                     'catalog.product',
+                     id=product.id
+                 ) }}">
+            Открыть
+          </a>
+
+          <a class="btn btn-outline-secondary"
+             href="{{ url_for(
+                     'admin.edit_product',
+                     product_id=product.id
+                 ) }}">
+            Изменить
+          </a>
+
+          <form method="post"
+                action="{{ url_for(
+                        'admin.delete_product',
+                        product_id=product.id
+                    ) }}"
+                onsubmit="return confirm(
+                      'Удалить товар «{{ product.title|e }}»?'
+                    );">
+
+            <button class="btn btn-outline-danger"
+                    type="submit">
+              Удалить
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+  {% else %}
+  <div class="text-muted">
+    Товаров пока нет.
+  </div>
+  {% endif %}
+
+  <div class="mt-4 mb-5">
+    <a class="btn btn-outline-primary"
+       href="{{ url_for('account.account') }}">
+      Вернуться в личный кабинет
+    </a>
+  </div>
+
+</div>
+{% endblock %}
