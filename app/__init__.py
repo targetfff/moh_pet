@@ -26,13 +26,17 @@ def create_app():
     def load_user(user_id):
         return db.session.get(Users, int(user_id))
 
+    from .account import account_bp
     from .auth import auth_bp
     from .catalog import catalog_bp
     from .legit import legit_bp
+    from .seller import seller_bp
 
+    app.register_blueprint(account_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(catalog_bp)
     app.register_blueprint(legit_bp)
+    app.register_blueprint(seller_bp)
 
     return app
 

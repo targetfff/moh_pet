@@ -16,7 +16,9 @@
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Quis imperdiet massa tincidunt nunc pulvinar. Justo laoreet sit amet cursus sit amet dictum sit. Facilisi etiam dignissim diam quis enim lobortis. Tristique nulla aliquet enim tortor at auctor urna nunc. At consectetur lorem donec massa sapien. Dictum non consectetur a erat nam at lectus. Mattis enim ut tellus elementum sagittis vitae. Sodales ut etiam sit amet nisl purus. Rhoncus aenean vel elit scelerisque mauris pellentesque. At consectetur lorem donec massa sapien faucibus. Amet luctus venenatis lectus magna fringilla urna porttitor rhoncus dolor. Pellentesque dignissim enim sit amet venenatis urna cursus eget.
     </p>
     <h2>Заполните форму и оплатите вступительный взнос</h2><br>
-    <form method="post" enctype="multipart/form-data">
+  <form action="{{ url_for('seller.become_a_seller') }}"
+        method="post"
+        enctype="multipart/form-data">
         <div class="form-floating">
             <input type="text" class="form-control" name="surname" id="surname1"
                    placeholder="Фамилия" required readonly value="{{ current_user.surname }}"><br>
