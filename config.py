@@ -25,3 +25,7 @@ class Config:
     AD_INTERVAL_SECONDS = int(
         os.getenv("AD_INTERVAL_SECONDS", 1800)
     )
+    PERFORMANCE_LOGGING = (
+            os.getenv("PERFORMANCE_LOGGING", "false").lower()
+            == "true"
+    )

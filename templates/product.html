@@ -295,8 +295,24 @@
         liked_price: $('#price').text(),
         action: $(this).data('like')
       },
+
       type: 'POST',
-      url: "{{ url_for('catalog.toggle_favorite') }}"
+
+      url: "{{ url_for('catalog.toggle_favorite') }}",
+
+      success: function (response) {
+        update_cart_badge(
+          response.cart_count
+        );
+      },
+
+      error: function (xhr) {
+        console.error(
+          'Favorite error:',
+          xhr.status,
+          xhr.responseText
+        );
+      }
     });
     if ($(this).data("like") == "like") {
       $(this).data("like", "dislike")
@@ -315,8 +331,6 @@
         span.removeClass('opacity_span')
       }, 200)
     }
-
-    count_liked()
   });
   $(document).on("mouseenter", '.vscomp-toggle-button', function () {
     $(this).css("background-color", "#198754");

@@ -4,6 +4,8 @@ from datetime import datetime
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from sqlalchemy import and_
+
 from app.extensions import db
 from app.models import (
     Advertisement,
@@ -14,7 +16,10 @@ from app.models import (
     Suggestions,
     Users,
 )
-from app.services.catalog import refresh_catalog_products
+
+from app.services.catalog import refresh_catalog_product
+
+
 from app.services.images import save_square_image
 
 from . import admin_bp
@@ -76,50 +81,78 @@ def remove_product_from_user_data(product_id):
 # ----------------------------------------------------------------------
 
 
-@admin_bp.post("/admin/trade-requests/<int:request_id>/accept")
+@admin_bp.post(
+    "/admin/trade-requests/<int:request_id>/accept"
+)
 @login_required
 def accept_trade_request(request_id):
     if not is_admin():
-        return {"error": "Forbidden"}, 403
+        return {
+            "error": "Forbidden"
+        }, 403
 
-    trade_request = db.session.get(
-        Requests,
-        request_id,
+    row = (
+        db.session.query(
+            Requests,
+            Products,
+            Offers,
+        )
+        .outerjoin(
+            Products,
+            Products.id == Requests.product_id,
+            )
+        .outerjoin(
+            Offers,
+            and_(
+                Offers.vendor_id
+                == Requests.vendor_id,
+
+                Offers.product_id
+                == Requests.product_id,
+                ),
+        )
+        .filter(
+            Requests.id == request_id
+        )
+        .first()
     )
 
-    if not trade_request:
+    if not row:
         return {
             "error": "Trade request not found"
         }, 404
 
-    product = db.session.get(
-        Products,
-        trade_request.product_id,
-    )
+    trade_request, product, offer = row
 
     if not product:
         return {
             "error": "Product not found"
         }, 404
 
-    offer = Offers.query.filter_by(
-        vendor_id=trade_request.vendor_id,
-        product_id=trade_request.product_id,
-    ).first()
-
     if offer:
-        offer.price = trade_request.price
+        offer.price = (
+            trade_request.price
+        )
+
     else:
         offer = Offers(
             vendor_id=trade_request.vendor_id,
             product_id=trade_request.product_id,
             price=trade_request.price,
         )
-        db.session.add(offer)
 
-    db.session.delete(trade_request)
+        db.session.add(
+            offer
+        )
 
-    refresh_catalog_products()
+    db.session.delete(
+        trade_request
+    )
+
+    refresh_catalog_product(
+        product
+    )
+
     db.session.commit()
 
     return {

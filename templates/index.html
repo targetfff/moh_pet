@@ -372,17 +372,26 @@
             action: isLiked ? "dislike" : "like"
           },
 
-          success: function () {
-            const newState = !isLiked;
+          success: function (response) {
+            const newState = response.liked;
 
-            toggle.attr('data-liked', newState ? '1' : '0');
-            toggle.toggleClass('is-liked', newState);
+            toggle.attr(
+              'data-liked',
+              newState ? '1' : '0'
+            );
+
+            toggle.toggleClass(
+              'is-liked',
+              newState
+            );
 
             toggle.removeClass('pop');
             void toggle[0].offsetWidth;
             toggle.addClass('pop');
 
-            count_liked();
+            update_cart_badge(
+              response.cart_count
+            );
           },
 
           error: function (xhr) {

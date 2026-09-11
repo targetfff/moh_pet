@@ -20,6 +20,9 @@ def create_app():
 
     login_manager.login_view = "auth.login"
 
+    from .performance import init_performance_logging
+    init_performance_logging(app)
+
     from .models import Users
 
     @login_manager.user_loader

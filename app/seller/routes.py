@@ -10,8 +10,9 @@ from app.models import (
     Requests,
     Suggestions,
     Vendors,
+    Offers,
 )
-from app.services.catalog import refresh_catalog_products
+from app.services.catalog import refresh_vendor_products
 from app.services.images import save_square_image
 
 from . import seller_bp
@@ -138,7 +139,7 @@ def update_profile():
             "vendor",
         )
 
-    refresh_catalog_products()
+    refresh_vendor_products(vendor.id)
 
     db.session.commit()
 
@@ -174,6 +175,36 @@ def create_trade_request():
 
     if not product:
         flash("Товар не найден.")
+
+        return redirect(
+            url_for("account.account")
+        )
+
+    existing_offer = Offers.query.filter_by(
+        vendor_id=vendor.id,
+        product_id=product.id,
+    ).first()
+
+    if existing_offer:
+        flash(
+            "Вы уже торгуете этим товаром."
+        )
+
+        return redirect(
+            url_for("account.account")
+        )
+
+    existing_request = Requests.query.filter_by(
+        vendor_id=vendor.id,
+        product_id=product.id,
+    ).first()
+
+    if existing_request:
+        flash(
+            "У вас уже есть заявка "
+            "на торговлю этим товаром."
+        )
+
         return redirect(
             url_for("account.account")
         )
@@ -183,28 +214,37 @@ def create_trade_request():
             request.form["price"]
             .replace(",", ".")
         )
+
     except (KeyError, ValueError):
         flash("Некорректная цена.")
+
         return redirect(
             url_for("account.account")
         )
 
     if price <= 0:
-        flash("Цена должна быть больше нуля.")
+        flash(
+            "Цена должна быть больше нуля."
+        )
+
         return redirect(
             url_for("account.account")
         )
 
     filenames = []
 
-    for image in request.files.getlist("images[]"):
+    for image in request.files.getlist(
+            "images[]"
+    ):
         filename = save_square_image(
             image,
             "request",
         )
 
         if filename:
-            filenames.append(filename)
+            filenames.append(
+                filename
+            )
 
     trade_request = Requests(
         product_id=product.id,
@@ -214,7 +254,10 @@ def create_trade_request():
         date=datetime.now(),
     )
 
-    db.session.add(trade_request)
+    db.session.add(
+        trade_request
+    )
+
     db.session.commit()
 
     return redirect(

@@ -157,12 +157,34 @@
 </head>
 <body>
 
+{% if current_user.is_authenticated and current_user.cart %}
+{% set cart_count = current_user.cart.strip(', ').split(', ') | length %}
+{% else %}
+{% set cart_count = 0 %}
+{% endif %}
+
 <a href="{{ url_for('catalog.cart') }}">
   <div class="for_sticky_cart">
     <i class="sticky_cart fa-solid fa-cart-shopping"></i>
-    <div class="sticky_cart_amount">
+
+    <div class="sticky_cart_amount"
+         style="opacity: {{ 1 if cart_count > 0 else 0 }};">
+
       <span id="sticky_cart_span"
-            style="transition: all .3s; margin-top: -.2em; font-size: 16px; font-weight: 500; letter-spacing: -0.16em;"></span>
+            style="
+              transition: all .3s;
+              margin-top: -.2em;
+              font-size: 16px;
+              font-weight: 500;
+              letter-spacing: {% if cart_count > 9 %}-.16em{% else %}0{% endif %};
+            ">
+        {% if cart_count > 9 %}
+          9+
+        {% elif cart_count > 0 %}
+          {{ cart_count }}
+        {% endif %}
+      </span>
+
     </div>
   </div>
 </a>
@@ -212,6 +234,28 @@
   <div class="header__border"></div>
 </div>
 
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+  <div
+    class="alert alert-success alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
 <div class="px-3">
   {% block body %}{% endblock %}
 </div>
@@ -258,37 +302,33 @@
 
 </body>
 <script>
-  function count_liked() {
-    this_span = $('#sticky_cart_span')
-    this_span.closest('.sticky_cart_amount').css('opacity', '0')
-    setTimeout(function () {
-      $.ajax({
-        data: {},
-        type: 'POST',
-        url: "{{ url_for('catalog.sticky_cart_span') }}",
-        complete: function (r) {
-          len_ = Number(r.responseText);
-          if (len_ == 0) {
-            this_span.closest('.sticky_cart_amount').css('opacity', '0')
-          } else {
-            if (len_ > 9) {
-              this_span.closest('.sticky_cart_amount').css('opacity', '1')
-              this_span.text('9+')
-              this_span.css('letter-spacing', '-.16em')
-            } else {
-              this_span.closest('.sticky_cart_amount').css('opacity', '1')
-              this_span.text(len_)
-              this_span.css('letter-spacing', '0')
-            }
-          }
-        }
-      });
-      this_span.css('opacity', 1)
-    }, 300);
-  }
+  function update_cart_badge(cartCount) {
+    const badge = $('.sticky_cart_amount');
+    const span = $('#sticky_cart_span');
 
+    if (cartCount <= 0) {
+      badge.css('opacity', '0');
+      span.text('');
+      return;
+    }
+
+    badge.css('opacity', '1');
+
+    if (cartCount > 9) {
+      span.text('9+');
+      span.css(
+        'letter-spacing',
+        '-.16em'
+      );
+    } else {
+      span.text(cartCount);
+      span.css(
+        'letter-spacing',
+        '0'
+      );
+    }
+  }
   $(document).ready(() => {
-    count_liked()
     const onScrollHeader = () => {
       const header = $('.header')
       let prevScroll = $(window).scrollTop()

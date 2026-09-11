@@ -60,12 +60,6 @@
   <h1>Вход</h1>
   <div class="flex-try">
       <form class="form_try" method="post" enctype="multipart/form-data">
-        {% for message in get_flashed_messages() %}
-        <div class="alert alert-success" style="margin: 0;">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          {{ message }}
-        </div>
-        {% endfor %}
         <div class="form-floating">
           <input type="text" class="form-control" name="email" id="email" placeholder="name@example.com" required>
           <label for="email">Адрес электронной почты</label>

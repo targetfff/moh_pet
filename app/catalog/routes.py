@@ -1,5 +1,6 @@
 import random
 import time
+from .utils import chunks
 
 from flask import current_app, render_template, request, session
 from flask_login import current_user, login_required
@@ -19,26 +20,30 @@ from .utils import chunks, tree_find
 
 @catalog_bp.route("/")
 def index():
-    prices = Offers.query.with_entities(Offers.price).all()
-    prices = [price[0] for price in prices]
+    prices = Offers.query.with_entities(
+        Offers.price
+    ).all()
+
+    prices = [
+        price[0]
+        for price in prices
+    ]
 
     products = Products.query.order_by(
         Products.date.desc()
     ).all()
 
-    vendor_ids = Offers.query.with_entities(
-        Offers.vendor_id
-    ).all()
-
-    vendors = set()
-
-    for vendor_id in vendor_ids:
-        vendor = Vendors.query.filter(
-            Vendors.id == vendor_id[0]
-        ).first()
-
-        if vendor:
-            vendors.add(vendor)
+    # Получаем всех продавцов, у которых есть хотя бы один Offer,
+    # одним SQL-запросом вместо запроса на каждого продавца.
+    vendors = (
+        Vendors.query
+        .join(
+            Offers,
+            Offers.vendor_id == Vendors.id,
+            )
+        .distinct()
+        .all()
+    )
 
     vendors = sorted(
         vendors,
@@ -49,45 +54,30 @@ def index():
         ),
     )
 
+    # Все категории получаем одним запросом.
     all_categories = Categories.query.all()
 
-    parent_categories = Categories.query.filter(
-        Categories.parent == 0
-    ).all()
-
-    categories = {
-        category: []
-        for category in parent_categories
-    }
+    # Строим дерево уже в Python.
+    children_by_parent = {}
 
     for category in all_categories:
-        if category.parent == 0:
-            continue
+        children_by_parent.setdefault(
+            category.parent,
+            [],
+        ).append(category)
 
-        parent = Categories.query.filter(
-            Categories.id == category.parent
-        ).first()
+    def build_category_tree(parent_id):
+        return {
+            category: build_category_tree(
+                category.id
+            )
+            for category in children_by_parent.get(
+                parent_id,
+                [],
+            )
+        }
 
-        if parent in categories:
-            categories[parent].append(category)
-        else:
-            categories[parent] = [category]
-
-    tree = {}
-
-    for parent, children in categories.items():
-        node = tree_find(parent, tree)
-
-        if node:
-            node[parent] = {
-                child: {}
-                for child in children
-            }
-        else:
-            tree[parent] = {
-                child: {}
-                for child in children
-            }
+    tree = build_category_tree(0)
 
     if (
             current_user.is_authenticated
@@ -106,13 +96,12 @@ def index():
         chunks(products, 3)
     )
 
-    # -------------------------------------------------
     # Advertisement
-    # -------------------------------------------------
-
     ad = None
 
-    ad_interval = current_app.config["AD_INTERVAL_SECONDS"]
+    ad_interval = current_app.config[
+        "AD_INTERVAL_SECONDS"
+    ]
 
     now = time.time()
 
@@ -129,9 +118,10 @@ def index():
         ads = Advertisement.query.all()
 
         if ads:
-            # Если реклам несколько, не показываем
-            # ту же самую два раза подряд.
-            if len(ads) > 1 and last_ad_id is not None:
+            if (
+                    len(ads) > 1
+                    and last_ad_id is not None
+            ):
                 available_ads = [
                     advertisement
                     for advertisement in ads
@@ -161,11 +151,19 @@ def index():
 
 @catalog_bp.route("/product/<int:id>")
 def product(id):
+    product = Products.query.filter(
+        Products.id == id
+    ).first_or_404()
+
+    recent_changed = False
+
     if current_user.is_authenticated:
         if current_user.cart:
             liked = [
                 int(item.split()[0])
-                for item in current_user.cart.strip(", ").split(", ")
+                for item in current_user.cart
+                .strip(", ")
+                .split(", ")
             ]
         else:
             liked = []
@@ -185,52 +183,47 @@ def product(id):
                 if len(recent_ids) > 14:
                     recent_ids.pop(0)
 
-                current_user.recent = " ".join(recent_ids)
+                new_recent = " ".join(
+                    recent_ids
+                )
+
+                if new_recent != current_user.recent:
+                    current_user.recent = new_recent
+                    recent_changed = True
+
             else:
                 current_user.recent = str(id)
+                recent_changed = True
 
-            db.session.commit()
     else:
         liked = []
 
-    product = Products.query.filter(
-        Products.id == id
-    ).first_or_404()
-
-    if product.vendors:
-        vendor_ids = (
-            str(product.vendors)
-            .lstrip("[")
-            .rstrip("]")
-            .split(", ")
+    offers_with_vendors = (
+        db.session.query(
+            Offers,
+            Vendors,
         )
-    else:
-        vendor_ids = []
+        .join(
+            Vendors,
+            Vendors.id == Offers.vendor_id,
+            )
+        .filter(
+            Offers.product_id == id
+        )
+        .order_by(
+            Offers.price.asc()
+        )
+        .all()
+    )
 
     vendors = []
     vendor_prices = {}
 
-    for vendor_id in vendor_ids:
-        vendor_id = int(vendor_id)
+    for offer, vendor in offers_with_vendors:
+        vendors.append(vendor)
+        vendor_prices[vendor.id] = offer.price
 
-        vendor = Vendors.query.filter(
-            Vendors.id == vendor_id
-        ).first()
-
-        offer = Offers.query.filter(
-            Offers.vendor_id == vendor_id,
-            Offers.product_id == id,
-        ).first()
-
-        if vendor and offer:
-            vendors.append(vendor)
-            vendor_prices[vendor_id] = offer.price
-
-    vendors.sort(
-        key=lambda vendor: vendor_prices[vendor.id]
-    )
-
-    return render_template(
+    response = render_template(
         "product.html",
         liked=liked,
         product=product,
@@ -238,62 +231,96 @@ def product(id):
         ven_prices=vendor_prices.items(),
     )
 
+    if recent_changed:
+        db.session.commit()
+
+    return response
+
 
 @catalog_bp.route("/cart")
 @login_required
 def cart():
+    if not current_user.cart:
+        return render_template(
+            "cart.html",
+            total=0,
+            prods=[],
+            liked=[],
+        )
+
+    raw_items = (
+        current_user.cart
+        .strip(", ")
+        .split(", ")
+    )
+
+    parsed_items = []
+    product_ids = []
+
+    for item in raw_items:
+        product_id, price, quantity = item.split()
+
+        product_id = int(product_id)
+        price = float(price)
+        quantity = int(quantity)
+
+        if price == -1:
+            price = 0
+
+        parsed_items.append(
+            (
+                product_id,
+                price,
+                quantity,
+            )
+        )
+
+        product_ids.append(
+            product_id
+        )
+
+    products = Products.query.filter(
+        Products.id.in_(product_ids)
+    ).all()
+
+    products_by_id = {
+        product.id: product
+        for product in products
+    }
+
     cart_items = []
     total = 0
 
-    if current_user.cart:
-        cart_products = current_user.cart.strip(", ").split(", ")
+    for (
+            product_id,
+            price,
+            quantity,
+    ) in parsed_items:
 
-        liked = [
-            int(item.split()[0])
-            for item in cart_products
-        ]
+        product = products_by_id.get(
+            product_id
+        )
 
-        for item in cart_products:
-            product_id, price, amount = item.split()
+        if not product:
+            continue
 
-            price = float(price)
+        cart_items.append([
+            product,
+            price,
+            quantity,
+        ])
 
-            if price == -1:
-                price = 0
-
-            product = Products.query.filter(
-                Products.id == int(product_id)
-            ).first()
-
-            cart_items.append([
-                product,
-                price,
-                int(amount),
-            ])
-
-            total += price * int(amount) + 3100
-    else:
-        liked = []
+        total += (
+                price * quantity
+                + 3100
+        )
 
     return render_template(
         "cart.html",
         total=total,
         prods=cart_items,
-        liked=liked,
+        liked=product_ids,
     )
-
-
-@catalog_bp.route("/sticky_cart_span", methods=["GET", "POST"])
-def sticky_cart_span():
-    if not current_user.is_authenticated:
-        return "0"
-
-    if not current_user.cart:
-        return "0"
-
-    cart_items = current_user.cart.strip(", ").split(", ")
-
-    return str(len(cart_items))
 
 
 @catalog_bp.route("/amount", methods=["POST"])
@@ -347,7 +374,10 @@ def amount():
     }
 
 
-@catalog_bp.route("/favorites/toggle", methods=["POST"])
+@catalog_bp.route(
+    "/favorites/toggle",
+    methods=["POST"],
+)
 @login_required
 def toggle_favorite():
     product_id = request.form.get(
@@ -356,7 +386,9 @@ def toggle_favorite():
     )
 
     if product_id is None:
-        return {"error": "liked_id is required"}, 400
+        return {
+            "error": "liked_id is required"
+        }, 400
 
     price = request.form.get(
         "liked_price",
@@ -364,14 +396,21 @@ def toggle_favorite():
     ).rstrip(" руб.")
 
     if price and price != "undefined":
-        price = float(price)
+        try:
+            price = float(price)
+        except ValueError:
+            price = 0.0
     else:
         price = 0.0
 
     liked = {}
 
     if current_user.cart:
-        items = current_user.cart.strip(", ").split(", ")
+        items = (
+            current_user.cart
+            .strip(", ")
+            .split(", ")
+        )
 
         for item in items:
             item_data = item.split()
@@ -382,9 +421,17 @@ def toggle_favorite():
             ]
 
     if product_id not in liked:
-        liked[product_id] = [price, 1]
+        liked[product_id] = [
+            price,
+            1,
+        ]
+
+        is_liked = True
+
     else:
         liked.pop(product_id)
+
+        is_liked = False
 
     current_user.cart = ", ".join(
         f"{item_id} {data[0]} {data[1]}"
@@ -393,26 +440,10 @@ def toggle_favorite():
 
     db.session.commit()
 
-    length = len(liked)
-
-    if length == 0:
-        return (
-            '<div class="mb-4 cart_title">'
-            "Избранное"
-            "<small> (нет товаров) </small>"
-            "</div>"
-        )
-
-    if str(length)[-1] == "1":
-        word = "товар"
-    else:
-        word = "товара(-ов)"
-
-    return (
-        '<div class="mb-4 cart_title">'
-        f"Избранное<small> ({length} {word}) </small>"
-        "</div>"
-    )
+    return {
+        "liked": is_liked,
+        "cart_count": len(liked),
+    }
 
 
 @catalog_bp.route("/get_cat_html", methods=["POST"])

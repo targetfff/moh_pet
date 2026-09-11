@@ -15,14 +15,18 @@ from . import account_bp
 @account_bp.route("/account")
 @login_required
 def account():
-    products = Products.query.order_by(
-        Products.date.desc()
-    ).all()
+    # -------------------------------------------------
+    # Vendor
+    # -------------------------------------------------
 
     if current_user.status == "vendor":
         vendor = Vendors.query.filter_by(
             email=current_user.email
         ).first()
+
+        products = Products.query.order_by(
+            Products.date.desc()
+        ).all()
 
         return render_template(
             "account.html",
@@ -31,35 +35,40 @@ def account():
             vendor=vendor,
         )
 
+    # -------------------------------------------------
+    # Admin
+    # -------------------------------------------------
+
     if current_user.status == "admin":
-        requests = Requests.query.order_by(
-            Requests.date.desc()
-        ).all()
-
-        requests_data = []
-
-        for trade_request in requests:
-            vendor = db.session.get(
+        requests_data = (
+            db.session.query(
                 Vendors,
-                trade_request.vendor_id,
-            )
-
-            product = db.session.get(
                 Products,
-                trade_request.product_id,
+                Requests,
             )
-
-            if vendor and product:
-                requests_data.append(
-                    [
-                        vendor,
-                        product,
-                        trade_request,
-                    ]
+            .join(
+                Vendors,
+                Vendors.id == Requests.vendor_id,
                 )
+            .join(
+                Products,
+                Products.id == Requests.product_id,
+                )
+            .order_by(
+                Requests.date.desc()
+            )
+            .all()
+        )
 
-        suggestions = (
-            Suggestions.query
+        suggestions_data = (
+            db.session.query(
+                Vendors,
+                Suggestions,
+            )
+            .join(
+                Vendors,
+                Vendors.id == Suggestions.vendor_id,
+                )
             .filter(
                 Suggestions.accepted.is_(False)
             )
@@ -69,29 +78,17 @@ def account():
             .all()
         )
 
-        suggestions_data = []
-
-        for suggestion in suggestions:
-            vendor = db.session.get(
-                Vendors,
-                suggestion.vendor_id,
-            )
-
-            if vendor:
-                suggestions_data.append(
-                    [
-                        vendor,
-                        suggestion,
-                    ]
-                )
-
         return render_template(
             "account.html",
             user=current_user,
-            data=products,
+            data=[],
             reqs_data=requests_data,
             sug_data=suggestions_data,
         )
+
+    # -------------------------------------------------
+    # Client
+    # -------------------------------------------------
 
     liked = []
 
@@ -106,19 +103,35 @@ def account():
     recent = []
 
     if current_user.recent:
-        for product_id in current_user.recent.split():
-            product = db.session.get(
-                Products,
-                int(product_id),
-            )
+        recent_ids = [
+            int(product_id)
+            for product_id
+            in current_user.recent.split()
+        ]
 
-            if product:
-                recent.append(product)
+        products = Products.query.filter(
+            Products.id.in_(recent_ids)
+        ).all()
+
+        products_by_id = {
+            product.id: product
+            for product in products
+        }
+
+        # recent хранится от старого к новому,
+        # а на странице показываем наоборот.
+        recent = [
+            products_by_id[product_id]
+            for product_id in reversed(
+                recent_ids
+            )
+            if product_id in products_by_id
+        ]
 
     return render_template(
         "account.html",
         user=current_user,
-        data=products,
+        data=[],
         liked=liked,
-        recent=recent[::-1],
+        recent=recent,
     )

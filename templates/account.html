@@ -361,31 +361,55 @@
 
 
   <script>
-    $(document).on('click', '.submit, .reject', function () {
-      const button = $(this);
-      const card = button.closest('.grid-item');
+    $(document).on(
+      'click',
+      '.submit, .reject',
+      function () {
+        const button = $(this);
+        const card = button.closest('.grid-item');
 
-      $.ajax({
-        url: button.data('url'),
-        type: 'POST',
+        // Защита от двойного клика
+        card
+          .find('button')
+          .prop('disabled', true);
 
-        success: function (response) {
-          console.log('Admin trade request:', response);
+        $.ajax({
+          url: button.data('url'),
+          type: 'POST',
 
-          card.fadeOut(400, function () {
-            $(this).remove();
-          });
-        },
+          success: function (response) {
+            console.log(
+              'Admin trade request:',
+              response
+            );
 
-        error: function (xhr) {
-          console.error(
-            'Admin trade request error:',
-            xhr.status,
-            xhr.responseText
-          );
-        }
-      });
-    });
+            // Никакого второго запроса.
+            // Сервер уже ответил 200 —
+            // просто убираем заявку со страницы.
+            card.fadeOut(
+              400,
+              function () {
+                $(this).remove();
+              }
+            );
+          },
+
+          error: function (xhr) {
+            console.error(
+              'Admin trade request error:',
+              xhr.status,
+              xhr.responseText
+            );
+
+            // Если сервер не принял запрос,
+            // возвращаем кнопки.
+            card
+              .find('button')
+              .prop('disabled', false);
+          }
+        });
+      }
+    );
   </script>
 
   <script src="{{ url_for('static', filename='js/DynamicSelect.js') }}"></script>
