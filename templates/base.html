@@ -1,160 +1,460 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
   <style>
     @font-face {
       font-family: 'Beryozki';
-      src: url({{ url_for('static', filename='const/Beryozki.ttf')}});
+      src: url({{ url_for('static', filename='const/Beryozki.ttf') }});
     }
   </style>
-  <link rel="icon" href="{{ url_for('static', filename='const/logo_moh.png') }}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+  <link
+    rel="icon"
+    href="{{ url_for('static', filename='const/logo_moh.png') }}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  >
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://kit.fontawesome.com/068f76ea97.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
+  <script
+    src="https://kit.fontawesome.com/068f76ea97.js"
+    crossorigin="anonymous"
+  ></script>
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/styles.css') }}"
+  >
+
   <style>
+    :root {
+      --header-height: 6rem;
+      --catalog-root-width: min(18rem, 82vw);
+      --catalog-detail-width: min(21rem, 86vw);
+      --catalog-border: #e2e7df;
+      --catalog-muted: #737373;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: clip;
+      scrollbar-gutter: stable;
+    }
+
     body {
-      background-color: #f4f8f4
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      overflow-x: clip;
+      background-color: #f4f8f4;
     }
 
-    .card {
-      transition: box-shadow 0.5s;
+    body.catalog-menu-open {
+      overflow-y: hidden;
     }
 
-    .card:hover {
-      box-shadow: 0 5px 10px gray !important;
+    /*
+     * Bootstrap при открытии modal сам добавляет body padding-right,
+     * чтобы компенсировать исчезнувший scrollbar.
+     *
+     * У нас scrollbar-gutter: stable уже резервирует это место,
+     * поэтому компенсация Bootstrap становится двойной и справа
+     * появляется заметный зазор.
+     */
+    body.modal-open {
+      padding-right: 0 !important;
     }
 
-    .form-control:focus {
-      border-color: #28a745 !important;
-      box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
-    }
-
-    .for_sticky_cart {
-      transition: all .3s;
-      box-shadow: 0 0 5px rgba(0, 0, 0, .35);
-      cursor: pointer;
-      position: fixed;
-      bottom: 2em;
-      right: 2em;
-      background-color: #fff;
-      width: 4.5em;
-      height: 4.5em;
-      z-index: 9999999999;
-      text-align: center;
-      display: grid;
-      align-items: center;
-      justify-items: center;
-      border-radius: 50%;
-    }
-
-    .for_sticky_cart:hover {
-      box-shadow: 0 0 5px rgba(0, 0, 0, .65);
-    }
-
-    .sticky_cart {
-      animation: none !important;
-      transform: scale(1.5) !important;
-      color: black !important;
-      margin-left: -0.15em !important;
+    body.modal-open .header {
+      margin-right: 0 !important;
+      padding-right: 0 !important;
     }
 
     .header {
       position: sticky;
       top: 0;
-      transition: .3s;
+      width: 100%;
+      height: var(--header-height);
+      transition: transform .3s ease;
     }
 
     .header_hidden {
       transform: translateY(-100%);
     }
 
-    .sticky_cart_amount {
-      transition: opacity .2s;
-      opacity: 0;
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      justify-items: center;
-      top: 0;
-      right: 0;
-      background-color: #5dc87c;
-      margin-top: 1em;
-      border-radius: 50%;
-      margin-right: 1em;
-      width: 1.2em;
-      height: 1.2em;
-      color: black;
+    .header__border {
+      width: 100% !important;
     }
 
-    .sticky_bot_message {
-      transition: opacity .2s;
-      background-color: #5cb85c;
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      justify-items: center;
-      top: 0;
-      right: 0;
-      background-color: #5dc87c;
-      margin-top: 1em;
-      border-radius: 50%;
-      margin-right: 1em;
-      width: 1em;
-      height: 1em;
-      color: black;
+    .header_container {
+      width: 92% !important;
+      max-width: 100%;
     }
 
-    .for_sticky_bot {
-      transition: all .3s;
-      box-shadow: 0 0 5px rgba(0, 0, 0, .35);
+    .header_container_left {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      min-width: 0;
+    }
+
+    .header_brand_link {
+      flex: 0 0 auto;
+    }
+
+    .catalog-menu-toggle {
+      width: 2.75rem;
+      height: 2.75rem;
+      padding: 0;
+      border: .0625rem solid #dce2d8;
+      border-radius: .7rem;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
       cursor: pointer;
+      transition:
+        background-color .2s ease,
+        border-color .2s ease;
+    }
+
+    .catalog-menu-toggle:hover,
+    .catalog-menu-toggle.is-open {
+      background: #f2f6ef;
+      border-color: #bfcab9;
+    }
+
+    .catalog-menu-toggle__icon,
+    .catalog-menu-toggle__icon::before,
+    .catalog-menu-toggle__icon::after {
+      display: block;
+      width: 1.25rem;
+      height: .125rem;
+      border-radius: 999rem;
+      background: #222;
+    }
+
+    .catalog-menu-toggle__icon {
+      position: relative;
+    }
+
+    .catalog-menu-toggle__icon::before,
+    .catalog-menu-toggle__icon::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      transition:
+        transform .2s ease,
+        top .2s ease;
+    }
+
+    .catalog-menu-toggle__icon::before {
+      top: -.4rem;
+    }
+
+    .catalog-menu-toggle__icon::after {
+      top: .4rem;
+    }
+
+    .catalog-menu-toggle.is-open .catalog-menu-toggle__icon {
+      background: transparent;
+    }
+
+    .catalog-menu-toggle.is-open .catalog-menu-toggle__icon::before {
+      top: 0;
+      transform: rotate(45deg);
+    }
+
+    .catalog-menu-toggle.is-open .catalog-menu-toggle__icon::after {
+      top: 0;
+      transform: rotate(-45deg);
+    }
+
+    .catalog-menu-backdrop {
       position: fixed;
-      bottom: 7em;
-      right: 2em;
+      inset: var(--header-height) 0 0;
+      z-index: 99999999996;
+      background: rgb(0 0 0 / 38%);
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity .2s ease,
+        visibility .2s ease;
+    }
+
+    .catalog-menu-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .catalog-root-drawer,
+    .catalog-detail-drawer {
+      position: fixed;
+      top: var(--header-height);
+      bottom: 0;
+      background: #fff;
+      visibility: hidden;
+      transition:
+        transform .24s ease,
+        visibility .24s ease;
+    }
+
+    .catalog-root-drawer {
+      left: 0;
+      z-index: 99999999998;
+      width: var(--catalog-root-width);
+      border-right: .0625rem solid #edf0eb;
+      transform: translateX(-100%);
+    }
+
+    .catalog-root-drawer.is-open {
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .catalog-detail-drawer {
+      left: var(--catalog-root-width);
+      z-index: 99999999997;
+      width: var(--catalog-detail-width);
+      border-right: .0625rem solid #edf0eb;
+      box-shadow: .6rem 0 1.5rem rgb(0 0 0 / 8%);
+      transform: translateX(-100%);
+    }
+
+    .catalog-detail-drawer.is-open {
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .catalog-root-list,
+    .catalog-detail-list {
+      height: 100%;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .catalog-root-list {
+      padding: 1rem .7rem 1.75rem;
+    }
+
+    .catalog-detail-drawer__inner {
+      height: 100%;
+      min-height: 0;
+      padding: 1rem .8rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .catalog-detail-header {
+      flex: 0 0 auto;
+      padding: 0 .5rem .7rem;
+    }
+
+    .catalog-detail-back {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #7b8178;
+      padding: .2rem 0 .75rem;
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .catalog-detail-back[hidden] {
+      display: none;
+    }
+
+    .catalog-detail-back__arrow {
+      color: #222;
+      font-size: 1.55rem;
+      line-height: 1;
+    }
+
+    .catalog-detail-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    .catalog-detail-list {
+      min-height: 0;
+      padding: 0 .15rem;
+    }
+
+    .category-row {
+      width: 100%;
+      min-height: 2.6rem;
+      border-radius: .5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: stretch;
+      overflow: hidden;
+      transition: background-color .15s ease;
+    }
+
+    .category-row:hover,
+    .category-row.is-active {
+      background: #f2f5f0;
+    }
+
+    .category-row__select,
+    .category-row__expand {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .category-row__select {
+      min-width: 0;
+      padding: .5rem .2rem .5rem .65rem;
+      text-align: left;
+      line-height: 1.3;
+    }
+
+    .category-row__select:hover {
+      color: #3c6e00;
+    }
+
+    .category-row__expand {
+      width: 2.4rem;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #757c72;
+      font-size: 1.45rem;
+      line-height: 1;
+    }
+
+    .category-row__expand:hover {
+      background: rgb(107 164 92 / 10%);
+      color: #3c6e00;
+    }
+
+    .category-menu-state {
+      padding: 1.8rem 1rem;
+      color: var(--catalog-muted);
+    }
+
+    .card {
+      transition: box-shadow .5s;
+    }
+
+    .card:hover {
+      box-shadow: 0 .3rem .65rem gray !important;
+    }
+
+    .form-control:focus {
+      border-color: #28a745 !important;
+      box-shadow: 0 0 0 .2rem rgba(40, 167, 69, .25) !important;
+    }
+
+    .for_sticky_cart,
+    .for_sticky_bot {
+      position: fixed;
+      right: 2rem;
+      width: 4.5rem;
+      height: 4.5rem;
       background-color: #fff;
-      width: 4.5em;
-      height: 4.5em;
-      z-index: 9999999999;
-      text-align: center;
+      border-radius: 50%;
+      box-shadow: 0 0 .3rem rgba(0, 0, 0, .35);
       display: grid;
       align-items: center;
       justify-items: center;
-      border-radius: 50%;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s;
+      z-index: 9999999999;
     }
 
+    .for_sticky_cart {
+      bottom: 2rem;
+    }
+
+    .for_sticky_bot {
+      bottom: 7rem;
+    }
+
+    .for_sticky_cart:hover,
     .for_sticky_bot:hover {
-      box-shadow: 0 0 5px rgba(0, 0, 0, .65);
+      box-shadow: 0 0 .3rem rgba(0, 0, 0, .65);
+    }
+
+    .sticky_cart {
+      animation: none !important;
+      transform: scale(1.5) !important;
+      color: black !important;
+      margin-left: -.15rem !important;
     }
 
     .sticky_bot {
       animation: none !important;
       transform: scale(1.55) !important;
       color: black !important;
-      margin-bottom: .15em !important;
+      margin-bottom: .15rem !important;
     }
 
-    .test {
-      font-family: 'beryozki';
-      font-size: 50px;
-      margin-bottom: -.2em;
+    .sticky_cart_amount {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1.2rem;
+      height: 1.2rem;
+      margin-top: 1rem;
+      margin-right: 1rem;
+      border-radius: 50%;
+      background-color: #5dc87c;
+      color: black;
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      justify-items: center;
+      transition: opacity .2s;
     }
 
-    .test1:hover {
-      color: black !important;
-    }
+    @media (max-width: 58rem) {
+      .header_container {
+        width: 96% !important;
+      }
 
-    .card > li {
-      text-align: center;
+      .header_container_row {
+        gap: 1rem !important;
+      }
+
+      .header_container_row__button,
+      .header_container_row__button2 {
+        font-size: 1.4em !important;
+      }
     }
   </style>
+
   {% block title %}{% endblock %}
 </head>
+
 <body>
 
 {% if current_user.is_authenticated and current_user.cart %}
@@ -167,24 +467,26 @@
   <div class="for_sticky_cart">
     <i class="sticky_cart fa-solid fa-cart-shopping"></i>
 
-    <div class="sticky_cart_amount"
-         style="opacity: {{ 1 if cart_count > 0 else 0 }};">
-
-      <span id="sticky_cart_span"
-            style="
-              transition: all .3s;
-              margin-top: -.2em;
-              font-size: 16px;
-              font-weight: 500;
-              letter-spacing: {% if cart_count > 9 %}-.16em{% else %}0{% endif %};
-            ">
+    <div
+      class="sticky_cart_amount"
+      style="opacity: {{ 1 if cart_count > 0 else 0 }};"
+    >
+      <span
+        id="sticky_cart_span"
+        style="
+          transition: all .3s;
+          margin-top: -.2rem;
+          font-size: 1rem;
+          font-weight: 500;
+          letter-spacing: {% if cart_count > 9 %}-.16rem{% else %}0{% endif %};
+        "
+      >
         {% if cart_count > 9 %}
           9+
         {% elif cart_count > 0 %}
           {{ cart_count }}
         {% endif %}
       </span>
-
     </div>
   </div>
 </a>
@@ -197,42 +499,146 @@
 
 <div class="header">
   <div class="header_container">
-    <a href="{{ url_for('catalog.index') }}">
-      <div class="header_logo">
-        <div class="header_logo__icon">
-          <img src="{{ url_for('static', filename='const/logo_moh.png') }}" class="header_logo__img"/>
+
+    <div class="header_container_left">
+      <a
+        href="{{ url_for('catalog.index') }}"
+        class="header_brand_link"
+      >
+        <div class="header_logo">
+          <div class="header_logo__icon">
+            <img
+              src="{{ url_for('static', filename='const/logo_moh.png') }}"
+              class="header_logo__img"
+              alt="МоХ"
+            >
+          </div>
+
+          <div class="header_logo__title">
+            МоХ
+          </div>
         </div>
-        <div class="header_logo__title">МоХ</div>
-      </div>
-    </a>
+      </a>
+
+      <button
+        id="catalog-menu-toggle"
+        class="catalog-menu-toggle"
+        type="button"
+        aria-label="Открыть категории"
+        aria-expanded="false"
+      >
+        <span
+          class="catalog-menu-toggle__icon"
+          aria-hidden="true"
+        ></span>
+      </button>
+    </div>
 
     <div class="header_container_row">
-      <a href="{{ url_for('legit.legit_check') }}"
-         class="header_container_row__button2 hover-underline-animation"
+      <a
+        href="{{ url_for('legit.legit_check') }}"
+        class="header_container_row__button2 hover-underline-animation"
       >
         Legit check
       </a>
 
-      <a href="#"
-         class="header_container_row__button2 hover-underline-animation"
+      <a
+        href="#"
+        class="header_container_row__button2 hover-underline-animation"
       >
         Поддержка
       </a>
 
       {% if current_user.is_authenticated %}
-      <a href="{{ url_for('account.account') }}"
-         class="header_container_row__button">
+      <a
+        href="{{ url_for('account.account') }}"
+        class="header_container_row__button"
+      >
         Личный кабинет
       </a>
-      <a href="{{ url_for('auth.logout') }}" class="header_container_row__button">Выйти</a>
+
+      <a
+        href="{{ url_for('auth.logout') }}"
+        class="header_container_row__button"
+      >
+        Выйти
+      </a>
       {% else %}
-      <a href="{{ url_for('auth.login') }}" class="header_container_row__button">Войти</a>
-      <a href="{{ url_for('auth.register') }}" class="header_container_row__button">Регистрация</a>
+      <a
+        href="{{ url_for('auth.login') }}"
+        class="header_container_row__button"
+      >
+        Войти
+      </a>
+
+      <a
+        href="{{ url_for('auth.register') }}"
+        class="header_container_row__button"
+      >
+        Регистрация
+      </a>
       {% endif %}
     </div>
   </div>
+
   <div class="header__border"></div>
 </div>
+
+<div
+  id="catalog-menu-backdrop"
+  class="catalog-menu-backdrop"
+></div>
+
+<aside
+  id="catalog-root-drawer"
+  class="catalog-root-drawer"
+  aria-hidden="true"
+>
+  <div
+    id="catalog-root-list"
+    class="catalog-root-list"
+  >
+    <div class="category-menu-state">
+      Категории загрузятся при открытии.
+    </div>
+  </div>
+</aside>
+
+<aside
+  id="catalog-detail-drawer"
+  class="catalog-detail-drawer"
+  aria-hidden="true"
+>
+  <div class="catalog-detail-drawer__inner">
+    <div class="catalog-detail-header">
+      <button
+        id="catalog-detail-back"
+        class="catalog-detail-back"
+        type="button"
+        hidden
+      >
+        <span
+          class="catalog-detail-back__arrow"
+          aria-hidden="true"
+        >
+          ←
+        </span>
+
+        <span id="catalog-detail-parent-title"></span>
+      </button>
+
+      <h2
+        id="catalog-detail-title"
+        class="catalog-detail-title"
+      ></h2>
+    </div>
+
+    <div
+      id="catalog-detail-list"
+      class="catalog-detail-list"
+    ></div>
+  </div>
+</aside>
 
 {% with messages = get_flashed_messages() %}
 {% if messages %}
@@ -256,7 +662,7 @@
 {% endif %}
 {% endwith %}
 
-<div class="px-3">
+<div class="page-content">
   {% block body %}{% endblock %}
 </div>
 
@@ -264,43 +670,39 @@
   <footer class="pt-4 my-md-5 pt-md-5">
     <div class="row">
       <div class="col-12 col-md">
-        <img class="mb-2" src="" alt="" width="24" height="19">
-        <small class="d-block mb-3 text-body-secondary">© 2017–2023</small>
+        <small class="d-block mb-3 text-body-secondary">
+          © 2026 МоХ
+        </small>
       </div>
+
       <div class="col-6 col-md">
         <h5>Features</h5>
         <ul class="list-unstyled text-small">
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Cool stuff</a></li>
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Random feature</a></li>
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Team feature</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Stuff for developers</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Another one</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Last time</a></li>
         </ul>
       </div>
+
       <div class="col-6 col-md">
         <h5>Resources</h5>
         <ul class="list-unstyled text-small">
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Resource</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Resource name</a></li>
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Another resource</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Final resource</a></li>
         </ul>
       </div>
+
       <div class="col-6 col-md">
         <h5>About</h5>
         <ul class="list-unstyled text-small">
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Team</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Locations</a></li>
           <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Privacy</a></li>
-          <li class="mb-1"><a class="link-secondary text-decoration-none" href="#">Terms</a></li>
         </ul>
       </div>
     </div>
   </footer>
 </div>
 
-</body>
 <script>
   function update_cart_badge(cartCount) {
     const badge = $('.sticky_cart_amount');
@@ -316,40 +718,403 @@
 
     if (cartCount > 9) {
       span.text('9+');
-      span.css(
-        'letter-spacing',
-        '-.16em'
-      );
+      span.css('letter-spacing', '-.16rem');
     } else {
       span.text(cartCount);
-      span.css(
-        'letter-spacing',
-        '0'
-      );
+      span.css('letter-spacing', '0');
     }
   }
-  $(document).ready(() => {
-    const onScrollHeader = () => {
-      const header = $('.header')
-      let prevScroll = $(window).scrollTop()
-      let currentScroll
-      $(window).scroll(() => {
-        currentScroll = $(window).scrollTop()
-        const headerHidden = () => header.hasClass('header_hidden')
-        if (currentScroll > prevScroll && !headerHidden()) {
-          setTimeout(function () {
-            header.addClass('header_hidden')
-          }, 250)
-        }
-        if (currentScroll < prevScroll && headerHidden()) {
-          setTimeout(function () {
-            header.removeClass('header_hidden')
-          }, 250)
-        }
-        prevScroll = currentScroll
-      })
+
+  (() => {
+    const header = document.querySelector('.header');
+    let previousScroll = window.scrollY;
+    let ticking = false;
+
+    function setHeaderHidden(hidden) {
+      header.classList.toggle(
+        'header_hidden',
+        hidden
+      );
+
+      document.body.classList.toggle(
+        'header-is-hidden',
+        hidden
+      );
     }
-    onScrollHeader()
-  })
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (document.body.classList.contains('catalog-menu-open')) {
+          return;
+        }
+
+        if (ticking) {
+          return;
+        }
+
+        ticking = true;
+
+        window.requestAnimationFrame(() => {
+          const currentScroll = window.scrollY;
+
+          if (
+            currentScroll > previousScroll
+            && currentScroll > 1
+          ) {
+            setHeaderHidden(true);
+          } else if (currentScroll < previousScroll) {
+            setHeaderHidden(false);
+          }
+
+          previousScroll = currentScroll;
+          ticking = false;
+        });
+      },
+      { passive: true }
+    );
+
+    const menuToggle = document.getElementById(
+      'catalog-menu-toggle'
+    );
+    const backdrop = document.getElementById(
+      'catalog-menu-backdrop'
+    );
+    const rootDrawer = document.getElementById(
+      'catalog-root-drawer'
+    );
+    const rootList = document.getElementById(
+      'catalog-root-list'
+    );
+    const detailDrawer = document.getElementById(
+      'catalog-detail-drawer'
+    );
+    const detailBack = document.getElementById(
+      'catalog-detail-back'
+    );
+    const detailParentTitle = document.getElementById(
+      'catalog-detail-parent-title'
+    );
+    const detailTitle = document.getElementById(
+      'catalog-detail-title'
+    );
+    const detailList = document.getElementById(
+      'catalog-detail-list'
+    );
+
+    let categoryTree = null;
+    let categoryTreePromise = null;
+    let categoryPath = [];
+    let rootsRendered = false;
+
+    function hasChildren(category) {
+      return (
+        Array.isArray(category.children)
+        && category.children.length > 0
+      );
+    }
+
+    function createCategoryRow(
+      category,
+      onExpand
+    ) {
+      const row = document.createElement('div');
+
+      row.className = 'category-row';
+      row.dataset.categoryId = String(category.id);
+
+      const selectButton = document.createElement(
+        'button'
+      );
+
+      selectButton.type = 'button';
+      selectButton.className =
+        'category-row__select';
+      selectButton.textContent = category.title;
+
+      /*
+       * Клик по названию всегда применяет фильтр.
+       * На backend выбранная категория включает
+       * также всех своих потомков.
+       */
+      selectButton.addEventListener(
+        'click',
+        () => goToCategory(category)
+      );
+
+      row.appendChild(selectButton);
+
+      if (hasChildren(category)) {
+        const expandButton = document.createElement(
+          'button'
+        );
+
+        expandButton.type = 'button';
+        expandButton.className =
+          'category-row__expand';
+        expandButton.textContent = '›';
+        expandButton.setAttribute(
+          'aria-label',
+          `Показать подкатегории: ${category.title}`
+        );
+
+        expandButton.addEventListener(
+          'click',
+          (event) => {
+            event.stopPropagation();
+            onExpand(category);
+          }
+        );
+
+        row.appendChild(expandButton);
+      }
+
+      return row;
+    }
+
+    function goToCategory(category) {
+      const url = new URL(
+        "{{ url_for('catalog.index', _external=True) }}"
+      );
+
+      url.searchParams.set(
+        'category',
+        String(category.id)
+      );
+
+      window.location.assign(url.toString());
+    }
+
+    async function getCategoryTree() {
+      if (categoryTree) {
+        return categoryTree;
+      }
+
+      if (categoryTreePromise) {
+        return categoryTreePromise;
+      }
+
+      categoryTreePromise = fetch(
+        "{{ url_for('catalog.categories_tree') }}",
+        {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        }
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          return response.json();
+        })
+        .then((result) => {
+          const categories = Array.isArray(result)
+            ? result
+            : result.categories;
+
+          if (!Array.isArray(categories)) {
+            throw new Error(
+              'Некорректное дерево категорий.'
+            );
+          }
+
+          categoryTree = categories;
+          return categories;
+        })
+        .finally(() => {
+          categoryTreePromise = null;
+        });
+
+      return categoryTreePromise;
+    }
+
+    function markActiveRoot(categoryId) {
+      rootList
+        .querySelectorAll('.category-row')
+        .forEach((row) => {
+          row.classList.toggle(
+            'is-active',
+            Number(row.dataset.categoryId)
+            === Number(categoryId)
+          );
+        });
+    }
+
+    function renderRoots(categories) {
+      rootList.innerHTML = '';
+
+      categories.forEach((category) => {
+        rootList.appendChild(
+          createCategoryRow(
+            category,
+            (selected) => {
+              categoryPath = [selected];
+              markActiveRoot(selected.id);
+              renderDetail(selected);
+            }
+          )
+        );
+      });
+
+      rootsRendered = true;
+    }
+
+    function renderDetail(category) {
+      const depth = categoryPath.length;
+
+      detailTitle.textContent = category.title;
+
+      if (depth > 1) {
+        const parent = categoryPath[depth - 2];
+        detailParentTitle.textContent = parent.title;
+        detailBack.hidden = false;
+      } else {
+        detailParentTitle.textContent = '';
+        detailBack.hidden = true;
+      }
+
+      detailList.innerHTML = '';
+
+      category.children.forEach((child) => {
+        detailList.appendChild(
+          createCategoryRow(
+            child,
+            (selected) => {
+              categoryPath.push(selected);
+              renderDetail(selected);
+            }
+          )
+        );
+      });
+
+      detailDrawer.classList.add('is-open');
+      detailDrawer.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+    }
+
+    detailBack.addEventListener(
+      'click',
+      () => {
+        if (categoryPath.length <= 1) {
+          return;
+        }
+
+        categoryPath.pop();
+        renderDetail(
+          categoryPath[categoryPath.length - 1]
+        );
+      }
+    );
+
+    async function openMenu() {
+      setHeaderHidden(false);
+
+      rootDrawer.classList.add('is-open');
+      backdrop.classList.add('is-open');
+      menuToggle.classList.add('is-open');
+      document.body.classList.add(
+        'catalog-menu-open'
+      );
+
+      rootDrawer.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+      menuToggle.setAttribute(
+        'aria-expanded',
+        'true'
+      );
+
+      try {
+        if (!categoryTree) {
+          rootList.innerHTML = `
+            <div class="category-menu-state">
+              Загружаем категории...
+            </div>
+          `;
+        }
+
+        const categories = await getCategoryTree();
+
+        if (!categories.length) {
+          rootList.innerHTML = `
+            <div class="category-menu-state">
+              Категорий пока нет.
+            </div>
+          `;
+          return;
+        }
+
+        if (!rootsRendered) {
+          renderRoots(categories);
+        }
+      } catch (error) {
+        console.error(
+          'Ошибка загрузки категорий:',
+          error
+        );
+
+        rootList.innerHTML = `
+          <div class="category-menu-state">
+            Не удалось загрузить категории.
+          </div>
+        `;
+      }
+    }
+
+    function closeMenu() {
+      rootDrawer.classList.remove('is-open');
+      detailDrawer.classList.remove('is-open');
+      backdrop.classList.remove('is-open');
+      menuToggle.classList.remove('is-open');
+      document.body.classList.remove(
+        'catalog-menu-open'
+      );
+
+      rootDrawer.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+      detailDrawer.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+      menuToggle.setAttribute(
+        'aria-expanded',
+        'false'
+      );
+    }
+
+    menuToggle.addEventListener(
+      'click',
+      () => {
+        if (rootDrawer.classList.contains('is-open')) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      }
+    );
+
+    backdrop.addEventListener(
+      'click',
+      closeMenu
+    );
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape') {
+          closeMenu();
+        }
+      }
+    );
+  })();
 </script>
+
+</body>
 </html>

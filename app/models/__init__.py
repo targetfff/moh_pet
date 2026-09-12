@@ -1,4 +1,5 @@
 from .advertisement import Advertisement
+from .associations import product_categories
 from .marketplace import Categories, Offers, Requests, Suggestions
 from .product import Products
 from .user import Users
@@ -14,4 +15,5 @@ __all__ = [
     "Suggestions",
     "Users",
     "Vendors",
+    "product_categories",
 ]

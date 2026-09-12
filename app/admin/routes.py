@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 
 from app.extensions import db
 from app.models import (
@@ -15,12 +15,16 @@ from app.models import (
     Requests,
     Suggestions,
     Users,
+    product_categories,
 )
 
 from app.services.catalog import refresh_catalog_product
 
 
-from app.services.images import save_square_image
+from app.services.images import (
+    ensure_product_thumbnail,
+    save_square_image,
+)
 
 from . import admin_bp
 
@@ -45,6 +49,27 @@ def parse_images(value):
         str(filename)
         for filename in result
         if filename
+    ]
+
+
+def resolve_categories(
+        all_categories,
+        raw_category_ids,
+):
+    selected_ids = set()
+
+    for raw_id in raw_category_ids:
+        try:
+            selected_ids.add(
+                int(raw_id)
+            )
+        except (TypeError, ValueError):
+            continue
+
+    return [
+        category
+        for category in all_categories
+        if category.id in selected_ids
     ]
 
 
@@ -339,6 +364,13 @@ def create_product():
         "categories"
     )
 
+    selected_category_objects = (
+        resolve_categories(
+            categories,
+            category_ids,
+        )
+    )
+
     suggestion_id = request.form.get(
         "suggestion_id",
         type=int,
@@ -442,7 +474,6 @@ def create_product():
 
     product = Products(
         title=title,
-        cat=" ".join(category_ids),
         vendor=None,
         vendors=None,
         main_logo="",
@@ -453,6 +484,14 @@ def create_product():
         images=str(images),
         date=datetime.now(),
         main_image=main_image,
+    )
+
+    product.categories = (
+        selected_category_objects
+    )
+
+    ensure_product_thumbnail(
+        main_image
     )
 
     db.session.add(product)
@@ -507,11 +546,10 @@ def edit_product(product_id):
             product.main_image,
         )
 
-    selected_categories = (
-        product.cat.split()
-        if product.cat
-        else []
-    )
+    selected_categories = [
+        str(category.id)
+        for category in product.categories
+    ]
 
     if request.method == "GET":
         return render_template(
@@ -542,6 +580,13 @@ def edit_product(product_id):
 
     category_ids = request.form.getlist(
         "categories"
+    )
+
+    selected_category_objects = (
+        resolve_categories(
+            categories,
+            category_ids,
+        )
     )
 
     if not title:
@@ -628,11 +673,17 @@ def edit_product(product_id):
         )
 
     product.title = title
-    product.cat = " ".join(category_ids)
+    product.categories = (
+        selected_category_objects
+    )
     product.description = description
     product.full_description = full_description
     product.images = str(images)
     product.main_image = main_image
+
+    ensure_product_thumbnail(
+        main_image
+    )
 
     db.session.commit()
 
@@ -671,6 +722,13 @@ def delete_product(product_id):
         product_id=product_id
     ).delete(
         synchronize_session=False
+    )
+
+    db.session.execute(
+        product_categories.delete().where(
+            product_categories.c.product_id
+            == product_id
+        )
     )
 
     remove_product_from_user_data(
@@ -743,25 +801,26 @@ def categories():
     for category in all_categories:
         parent_titles[category.id] = category.title
 
-    product_counts = {}
+    product_counts = {
+        category.id: 0
+        for category in all_categories
+    }
 
-    for category in all_categories:
-        product_counts[category.id] = 0
+    count_rows = (
+        db.session.query(
+            product_categories.c.category_id,
+            func.count(
+                product_categories.c.product_id
+            ),
+        )
+        .group_by(
+            product_categories.c.category_id
+        )
+        .all()
+    )
 
-    for product in Products.query.all():
-        if not product.cat:
-            continue
-
-        for raw_category_id in product.cat.split():
-            try:
-                category_id = int(
-                    raw_category_id
-                )
-            except ValueError:
-                continue
-
-            if category_id in product_counts:
-                product_counts[category_id] += 1
+    for category_id, count in count_rows:
+        product_counts[category_id] = count
 
     return render_template(
         "admin/categories.html",
@@ -1033,25 +1092,12 @@ def delete_category(category_id):
     for child in children:
         child.parent = old_parent_id
 
-    category_id_str = str(
-        category.id
-    )
-
-    for product in Products.query.all():
-        if not product.cat:
-            continue
-
-        category_ids = [
-            item
-            for item in product.cat.split()
-            if item != category_id_str
-        ]
-
-        product.cat = (
-            " ".join(category_ids)
-            if category_ids
-            else None
+    db.session.execute(
+        product_categories.delete().where(
+            product_categories.c.category_id
+            == category.id
         )
+    )
 
     db.session.delete(category)
     db.session.commit()

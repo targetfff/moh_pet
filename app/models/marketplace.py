@@ -1,5 +1,7 @@
 from app.extensions import db
 
+from .associations import product_categories
+
 
 class Offers(db.Model):
     __table_args__ = (
@@ -40,6 +42,14 @@ class Categories(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=True)
     parent = db.Column(db.Integer, nullable=True)
+
+    products = db.relationship(
+        "Products",
+        secondary=product_categories,
+        back_populates="categories",
+        lazy="select",
+        passive_deletes=True,
+    )
 
 
 class Requests(db.Model):
