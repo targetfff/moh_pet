@@ -126,20 +126,39 @@ def update_profile():
             url_for("catalog.index")
         )
 
-    vendor.title = request.form.get(
+    new_title = request.form.get(
         "new_title",
         "",
     ).strip() or None
 
-    new_logo = request.files.get("new_logo")
+    catalog_changed = (
+        new_title != vendor.title
+    )
+
+    vendor.title = new_title
+
+    new_logo = request.files.get(
+        "new_logo"
+    )
 
     if new_logo and new_logo.filename:
-        vendor.logo = save_square_image(
+        saved_logo = save_square_image(
             new_logo,
             "vendor",
         )
 
-    refresh_vendor_products(vendor.id)
+        if saved_logo:
+            catalog_changed = (
+                catalog_changed
+                or saved_logo != vendor.logo
+            )
+
+            vendor.logo = saved_logo
+
+    if catalog_changed:
+        refresh_vendor_products(
+            vendor.id
+        )
 
     db.session.commit()
 
