@@ -18,7 +18,10 @@
 
   .suggestion-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
     gap: 1em;
   }
 
@@ -26,12 +29,16 @@
     padding: 1.2em;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .12);
+    box-shadow:
+      0 1px 5px rgba(0, 0, 0, .12);
   }
 
   .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
     gap: 1.5em;
   }
 
@@ -39,7 +46,8 @@
     background: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .12);
+    box-shadow:
+      0 1px 5px rgba(0, 0, 0, .12);
   }
 
   .admin-product-card img {
@@ -58,6 +66,20 @@
     flex-wrap: wrap;
     gap: .5em;
   }
+
+  .admin-products-pagination {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+  }
+
+  .admin-products-page-number {
+    min-width: 7rem;
+    text-align: center;
+    color: #6c757d;
+  }
 </style>
 {% endblock %}
 
@@ -68,6 +90,7 @@
   <div class="admin-products-header">
     <div>
       <h1>Управление товарами</h1>
+
       <div class="text-muted">
         Создание, просмотр, изменение и удаление товаров
       </div>
@@ -103,13 +126,17 @@
     <div class="suggestion-list">
       {% for suggestion in approved_suggestions %}
       <div class="suggestion-card">
-        <h5>{{ suggestion.title }}</h5>
+        <h5>
+          {{ suggestion.title }}
+        </h5>
 
-        <a class="btn btn-outline-success"
-           href="{{ url_for(
-                   'admin.create_product',
-                   suggestion_id=suggestion.id
-               ) }}">
+        <a
+          class="btn btn-outline-success"
+          href="{{ url_for(
+              'admin.create_product',
+              suggestion_id=suggestion.id
+          ) }}"
+        >
           Создать товар
         </a>
       </div>
@@ -119,55 +146,76 @@
   {% endif %}
 
 
-  <h3 class="mb-3">Все товары</h3>
+  <h3 class="mb-3">
+    Все товары
+  </h3>
 
   {% if products %}
   <div class="products-grid">
 
     {% for product in products %}
+    {% set thumbnail_name = product.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+
     <div class="admin-product-card">
 
-      <img src="{{ url_for(
-                       'static',
-                       filename='img/' + product.main_image
-                     ) }}"
-           alt="{{ product.title }}">
+      <img
+        src="{{ url_for(
+            'static',
+            filename='img/thumbs/' ~ thumbnail_name
+        ) }}"
+        alt="{{ product.title }}"
+        loading="lazy"
+        decoding="async"
+        onerror="this.onerror=null;this.src='{{ url_for(
+            'static',
+            filename='img/' ~ product.main_image
+        ) }}';"
+      >
 
       <div class="admin-product-body">
-        <h5>{{ product.title }}</h5>
+        <h5>
+          {{ product.title }}
+        </h5>
 
         <p class="text-muted">
           {{ product.description or "" }}
         </p>
 
         <div class="admin-product-actions">
-          <a class="btn btn-outline-primary"
-             href="{{ url_for(
-                     'catalog.product',
-                     id=product.id
-                 ) }}">
+          <a
+            class="btn btn-outline-primary"
+            href="{{ url_for(
+                'catalog.product',
+                id=product.id
+            ) }}"
+          >
             Открыть
           </a>
 
-          <a class="btn btn-outline-secondary"
-             href="{{ url_for(
-                     'admin.edit_product',
-                     product_id=product.id
-                 ) }}">
+          <a
+            class="btn btn-outline-secondary"
+            href="{{ url_for(
+                'admin.edit_product',
+                product_id=product.id
+            ) }}"
+          >
             Изменить
           </a>
 
-          <form method="post"
-                action="{{ url_for(
-                        'admin.delete_product',
-                        product_id=product.id
-                    ) }}"
-                onsubmit="return confirm(
-                      'Удалить товар «{{ product.title|e }}»?'
-                    );">
-
-            <button class="btn btn-outline-danger"
-                    type="submit">
+          <form
+            method="post"
+            action="{{ url_for(
+                'admin.delete_product',
+                product_id=product.id
+            ) }}"
+            onsubmit="return confirm(
+              'Удалить товар «{{ product.title|e }}»?'
+            );"
+          >
+            <button
+              class="btn btn-outline-danger"
+              type="submit"
+            >
               Удалить
             </button>
           </form>
@@ -177,6 +225,54 @@
     {% endfor %}
 
   </div>
+
+  <nav
+    class="admin-products-pagination"
+    aria-label="Страницы товаров"
+  >
+    {% if has_prev %}
+    <a
+      class="btn btn-outline-secondary"
+      href="{{ url_for(
+          'admin.products',
+          page=page - 1
+      ) }}"
+    >
+      ← Назад
+    </a>
+    {% else %}
+    <span
+      class="btn btn-outline-secondary disabled"
+      aria-disabled="true"
+    >
+      ← Назад
+    </span>
+    {% endif %}
+
+    <span class="admin-products-page-number">
+      Страница {{ page }}
+    </span>
+
+    {% if has_next %}
+    <a
+      class="btn btn-outline-secondary"
+      href="{{ url_for(
+          'admin.products',
+          page=page + 1
+      ) }}"
+    >
+      Вперёд →
+    </a>
+    {% else %}
+    <span
+      class="btn btn-outline-secondary disabled"
+      aria-disabled="true"
+    >
+      Вперёд →
+    </span>
+    {% endif %}
+  </nav>
+
   {% else %}
   <div class="text-muted">
     Товаров пока нет.
@@ -184,8 +280,10 @@
   {% endif %}
 
   <div class="mt-4 mb-5">
-    <a class="btn btn-outline-primary"
-       href="{{ url_for('account.account') }}">
+    <a
+      class="btn btn-outline-primary"
+      href="{{ url_for('account.account') }}"
+    >
       Вернуться в личный кабинет
     </a>
   </div>

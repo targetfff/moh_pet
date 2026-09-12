@@ -284,9 +284,13 @@
                     data-placeholder="product_to_access"
                     data-dynamic-select
                     required>
+              {% set prod_thumbnail = prod.main_image.rsplit('.', 1)[0] ~ '.webp' %}
               <option value="{{ prod.id }}"
                       class="form-control"
-                      data-img="{{ url_for('static', filename='img/' + prod.main_image) }}">
+                      data-img="{{ url_for(
+                          'static',
+                          filename='img/thumbs/' ~ prod_thumbnail
+                      ) }}">
                 {{ prod.title }}
               </option>
             </select>
@@ -765,7 +769,8 @@
   <br>
 
   <div style="
-      display: grid;      grid-template-columns: 1fr 1fr;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 2em;
     ">
     <div class="for_vendor_form">
@@ -803,9 +808,13 @@
                 required>
 
           {% for el in data %}
+          {% set thumbnail_name = el.main_image.rsplit('.', 1)[0] ~ '.webp' %}
           <option value="{{ el.id }}"
                   class="form-control"
-                  data-img="{{ url_for('static', filename='img/' + el.main_image) }}">
+                  data-img="{{ url_for(
+                      'static',
+                      filename='img/thumbs/' ~ thumbnail_name
+                  ) }}">
             {{ el.title }}
           </option>
           {% endfor %}
@@ -973,10 +982,20 @@
                     </svg>
                   </button>
 
+                  {% set thumbnail_name = el.main_image.rsplit('.', 1)[0] ~ '.webp' %}
                   <a href="{{ url_for('catalog.product', id=el.id) }}">
                     <img class="img-fluid"
-                         src="{{ url_for('static', filename='img/' + el.main_image) }}"
-                         alt="{{ el.main_image }}">
+                         src="{{ url_for(
+                             'static',
+                             filename='img/thumbs/' ~ thumbnail_name
+                         ) }}"
+                         alt="{{ el.title }}"
+                         loading="lazy"
+                         decoding="async"
+                         onerror="this.onerror=null;this.src='{{ url_for(
+                             'static',
+                             filename='img/' ~ el.main_image
+                         ) }}';">
                   </a>
                 </div>
 

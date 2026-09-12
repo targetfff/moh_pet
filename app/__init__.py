@@ -1,4 +1,6 @@
 from flask import Flask
+from flask_login import current_user
+from sqlalchemy.orm import joinedload
 
 from config import Config
 
@@ -27,7 +29,35 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(Users, int(user_id))
+        return (
+            Users.query
+            .options(
+                joinedload(
+                    Users.cart_items
+                )
+            )
+            .filter(
+                Users.id == int(user_id)
+            )
+            .first()
+        )
+
+    @app.context_processor
+    def inject_cart_helpers():
+        def get_cart_count():
+            if (
+                not current_user.is_authenticated
+                or current_user.status != "client"
+            ):
+                return 0
+
+            return len(
+                current_user.cart_items
+            )
+
+        return {
+            "get_cart_count": get_cart_count,
+        }
 
     from .account import account_bp
     from .auth import auth_bp
@@ -44,4 +74,3 @@ def create_app():
     app.register_blueprint(seller_bp)
 
     return app
-

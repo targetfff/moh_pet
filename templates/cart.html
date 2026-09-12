@@ -2,486 +2,349 @@
 
 {% block title %}
 <title>Корзина</title>
-
 <style>
-  ul {
-    list-style: none;
-    margin-bottom: 0;
-  }
+ul {
+  list-style: none;
+  margin-bottom: 0;
+}
 
-  .cart_section {
-    width: 100%;
-    padding-top: 93px;
-    padding-bottom: 111px;
-  }
+.cart_section {
+  width: 100%;
+  padding-top: 93px;
+  padding-bottom: 111px;
+}
 
-  .cart_title {
-    font-size: 30px;
-    font-weight: 500;
-  }
+.cart_title {
+  font-size: 30px;
+  font-weight: 500;
+}
 
-  .cart_list {
-    border: solid 1px #e8e8e8;
-    border-radius: 12px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
-    background-color: #fff;
-    padding-right: 0 !important;
-    padding-left: 0 !important;
-  }
+.cart-page-heading {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  margin: 2rem 0 1rem;
+}
 
-  .cart_item {
-    padding-bottom: 1em;
-    width: 100%;
-    max-width: 100%;
-    display: grid;
-    grid-template-columns: 8em 5fr;
-    transition: all .2s !important;
-    border-bottom: 1px solid rgba(0, 0, 0, .15) !important;
-    padding-right: 0 !important;
-    padding-left: 0 !important;
-  }
+.cart-page-heading h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
 
-  .cart_div {
-    position: relative;
-    z-index: 2;
+.cart-page-count {
+  color: #737373;
+  font-size: 1rem;
+}
 
-    transition:
-      opacity .45s,
-      box-shadow .2s,
-      max-height .5s ease-in-out,
-      padding-top .5s ease-in-out;
+.cart_list {
+  border: solid 1px #e8e8e8;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+  background-color: #fff;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
 
-    padding-left: 2em;
-    padding-right: 2em;
-    padding-top: 1em;
+.cart_item {
+  padding-bottom: 1em;
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: 8em 5fr;
+  transition: all .2s !important;
+  border-bottom: 1px solid rgba(0, 0, 0, .15) !important;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
 
-    border-radius: inherit;
-    max-height: 10em;
-  }
+.cart_div {
+  position: relative;
+  z-index: 2;
+  transition: opacity .45s, box-shadow .2s,
+              max-height .5s ease-in-out,
+              padding-top .5s ease-in-out;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-top: 1em;
+  border-radius: inherit;
+  max-height: 10em;
+}
 
-  .cart_div:hover {
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  }
+.cart_div:hover {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
 
-  .cart_item_image {
-    width: 8em;
-    height: 8em;
-    float: left;
-  }
+.cart_item_image {
+  width: 8em;
+  height: 8em;
+  float: left;
+}
 
-  img {
-    transition:
-      opacity .45s,
-      box-shadow .2s,
-      height 3s,
-      padding-top 1s;
+img {
+  transition: opacity .45s, box-shadow .2s, height 3s, padding-top 1s;
+  max-width: 100%;
+}
 
-    max-width: 100%;
-  }
+.cart_item_info {
+  max-width: 100%;
+  margin-left: 3em;
+  height: 100%;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+}
 
-  .cart_item_info {
-    max-width: 100%;
-    margin-left: 3em;
-    height: 100%;
+.cart_item_cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
-    padding-top: 1em;
-    padding-bottom: 1em;
+.cart_item_title {
+  font-size: 14px;
+  font-weight: 400;
+  text-align: right;
+  color: rgba(0, 0, 0, 0.5);
+}
 
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  }
+.cart_item_text {
+  font-size: 18px;
+  text-align: right;
+}
 
-  .cart_item_cell {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
+.cart_item_total {
+  text-align: right;
+}
 
-  .cart_item_title {
-    font-size: 14px;
-    font-weight: 400;
-    text-align: right;
-    color: rgba(0, 0, 0, 0.5);
-  }
+.order_total {
+  display: flex;
+  justify-self: self-end;
+  justify-content: space-between;
+  align-items: center;
+  width: 30%;
+  height: 4em;
+  margin-top: 1.5em;
+  border: solid 1px #e8e8e8;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  border-radius: 0.5em;
+}
 
-  .cart_item_text {
-    font-size: 18px;
-    text-align: right;
-  }
+.order_total_title {
+  color: rgba(0, 0, 0, 0.5);
+}
 
-  .cart_item_total {
-    text-align: right;
-  }
+.order_total_content {
+  justify-content: space-between;
+  display: flex;
+}
 
-  .order_total {
-    display: flex;
+p {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  margin-right: 1.5em;
+  margin-left: 1.5em;
+}
 
-    justify-self: self-end;
-    justify-content: space-between;
-    align-items: center;
+.cart_control {
+  display: flex;
+  justify-self: self-end;
+  justify-content: space-between;
+  width: 30%;
+  height: 4em;
+  margin-top: 1.5em;
+}
 
-    width: 30%;
-    height: 4em;
-    margin-top: 1.5em;
+.delete_div {
+  position: absolute;
+  right: 0;
+  width: 6em;
+  height: 8em;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
 
-    border: solid 1px #e8e8e8;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+.cross {
+  cursor: pointer;
+  transition: all .3s;
+  opacity: 0;
+  transform: scale(1.5);
+  filter: invert(81%) sepia(7%) saturate(12%) hue-rotate(332deg)
+          brightness(82%) contrast(83%);
+}
 
-    background-color: #fff;
-    border-radius: 0.5em;
-  }
+.quantity {
+  display: inline-flex;
+  justify-content: center;
+  max-width: 2em;
+  width: 2em;
+  margin-left: .5em;
+  margin-right: .5em;
+}
 
-  .order_total_title {
-    color: rgba(0, 0, 0, 0.5);
-  }
+.fa-minus {
+  color: #dd1111;
+}
 
-  .order_total_content {
-    justify-content: space-between;
-    display: flex;
-  }
+.fa-plus {
+  color: #419020;
+}
 
-  p {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-    margin-right: 1.5em;
-    margin-left: 1.5em;
-  }
-
-  .cart_control {
-    display: flex;
-
-    justify-self: self-end;
-    justify-content: space-between;
-
-    width: 30%;
-    height: 4em;
-    margin-top: 1.5em;
-  }
-
-  .delete_div {
-    position: absolute;
-    right: 0;
-
-    width: 6em;
-    height: 8em;
-
-    display: grid;
-    align-items: center;
-    justify-items: center;
-  }
-
-  .cross {
-    cursor: pointer;
-
-    transition: all .3s;
-    opacity: 0;
-
-    transform: scale(1.5);
-
-    filter:
-      invert(81%)
-      sepia(7%)
-      saturate(12%)
-      hue-rotate(332deg)
-      brightness(82%)
-      contrast(83%);
-  }
-
-  .quantity {
-    display: inline-flex;
-    justify-content: center;
-
-    max-width: 2em;
-    width: 2em;
-
-    margin-left: .5em;
-    margin-right: .5em;
-  }
-
-  .fa-minus {
-    color: #dd1111;
-  }
-
-  .fa-plus {
-    color: #419020;
-  }
-
-  .none-button {
-    background-color: transparent;
-    border: none;
-  }
+.none-button {
+  background-color: transparent;
+  border: none;
+}
 </style>
 {% endblock %}
 
-
 {% block body %}
+<div class="container pb-5" style="display: grid !important;">
+  <div class="cart-page-heading">
+    <h1>Корзина</h1>
 
-<div class="container pb-5"
-     style="display: grid !important;">
-
-  {% set leng_str = prods|length|string %}
-
-  <div class="for_inner">
-
-    {% if leng_str == '0' %}
-
-    <div class="mb-4 cart_title">
-      Избранное
-      <small>(нет товаров)</small>
-    </div>
-
-    {% elif leng_str[-1] == '1' %}
-
-    <div class="mb-4 cart_title">
-      Избранное
-      <small>
-        ({{ prods | length }} товар)
-      </small>
-    </div>
-
-    {% else %}
-
-    <div class="mb-4 cart_title">
-      Избранное
-      <small>
-        ({{ prods | length }} товара(-ов))
-      </small>
-    </div>
-
-    {% endif %}
-
+    <span
+      id="cart-page-count"
+      class="cart-page-count"
+    >
+      {% if prods|length == 0 %}
+        нет товаров
+      {% elif prods|length % 10 == 1 and prods|length % 100 != 11 %}
+        {{ prods|length }} товар
+      {% elif prods|length % 10 in [2, 3, 4] and not (12 <= prods|length % 100 <= 14) %}
+        {{ prods|length }} товара
+      {% else %}
+        {{ prods|length }} товаров
+      {% endif %}
+    </span>
   </div>
-
 
   <div class="cart_items">
-
     <ul class="cart_list">
-
       {% for i in range(prods | length) %}
+        {% set prod = prods[i][0] %}
+        {% set price = prods[i][1] %}
+        {% set quantity = prods[i][2] %}
 
-      {% set prod = prods[i][0] %}
-      {% set price = prods[i][1] %}
-      {% set quantity = prods[i][2] %}
+        <li class="cart_div"
+            data-product="{{ prod.id }}"
+            data-price="{{ price }}"
+            data-quantity="{{ quantity }}">
+          <div class="delete_div">
+            <svg class="cross"
+                 width="24"
+                 height="24"
+                 xmlns="http://www.w3.org/2000/svg"
+                 fill-rule="evenodd"
+                 clip-rule="evenodd">
+              <path d="M12 11.293l10.293-10.293.707.707-10.293 10.293
+                       10.293 10.293-.707.707-10.293-10.293-10.293
+                       10.293-.707-.707 10.293-10.293-10.293-10.293
+                       .707-.707 10.293 10.293z"/>
+            </svg>
+          </div>
 
-      <li
-        class="cart_div"
-        data-product="{{ prod.id }}"
-        data-price="{{ price }}"
-        data-quantity="{{ quantity }}"
-      >
-
-        <div class="delete_div">
-
-          <svg
-            class="cross"
-            width="24"
-            height="24"
-            xmlns="http://www.w3.org/2000/svg"
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-          >
-            <path
-              d="
-                  M12 11.293
-                  l10.293-10.293
-                  .707.707
-                  -10.293 10.293
-                  10.293 10.293
-                  -.707.707
-                  -10.293-10.293
-                  -10.293 10.293
-                  -.707-.707
-                  10.293-10.293
-                  -10.293-10.293
-                  .707-.707
-                  10.293 10.293z
-                "
-            />
-          </svg>
-
-        </div>
-
-
-        <div class="cart_item">
-
-          <div class="cart_item_image">
-
-            <a href="{{ url_for('catalog.product', id=prod.id) }}">
-
-              <img
-                style="max-height: 100%;"
-                src="{{ url_for(
+          <div class="cart_item">
+            <div class="cart_item_image">
+              {% set thumbnail_name = prod.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+              <a href="{{ url_for('catalog.product', id=prod.id) }}">
+                <img
+                  style="max-height: 100%;"
+                  src="{{ url_for(
                     'static',
-                    filename='img/' + prod.main_image
+                    filename='img/thumbs/' ~ thumbnail_name
                   ) }}"
-                alt="{{ prod.title }}"
-              >
-
-            </a>
-
-          </div>
-
-
-          <div class="cart_item_info">
-
-            <div class="cart_item_cell cart_info_col">
-
-              <div
-                class="cart_item_title"
-                style="text-align: left"
-              >
-                Название
-              </div>
-
-              <div
-                class="cart_item_text"
-                style="text-align: left"
-              >
-                {{ prod.title }}
-              </div>
-
-            </div>
-
-
-            <div class="cart_item_cell cart_info_col">
-
-              <div class="cart_item_title">
-                Кол-во
-              </div>
-
-              <div
-                class="cart_item_text"
-                style="text-align: right"
-              >
-
-                <button
-                  class="none-button none_minus"
-                  type="button"
+                  alt="{{ prod.title }}"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.onerror=null;this.src='{{ url_for(
+                    'static',
+                    filename='img/' ~ prod.main_image
+                  ) }}';"
                 >
-                  <i class="fa-solid fa-minus"></i>
-                </button>
-
-                <span class="quantity">
-                    {{ quantity }}
-                  </span>
-
-                <button
-                  class="none-button none_plus"
-                  type="button"
-                >
-                  <i class="fa-solid fa-plus"></i>
-                </button>
-
-              </div>
-
+              </a>
             </div>
 
-
-            <div class="cart_item_cell cart_info_col">
-
-              <div class="cart_item_title">
-                Цена
+            <div class="cart_item_info">
+              <div class="cart_item_cell cart_info_col">
+                <div class="cart_item_title" style="text-align: left">
+                  Название
+                </div>
+                <div class="cart_item_text" style="text-align: left">
+                  {{ prod.title }}
+                </div>
               </div>
 
-              {% if price != 0 %}
+              <div class="cart_item_cell cart_info_col">
+                <div class="cart_item_title">Кол-во</div>
+                <div class="cart_item_text" style="text-align: right">
+                  <button class="none-button none_minus" type="button">
+                    <i class="fa-solid fa-minus"></i>
+                  </button>
 
-              <div class="cart_item_text">
-                {{ price }} руб.
+                  <span class="quantity">{{ quantity }}</span>
+
+                  <button class="none-button none_plus" type="button">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                </div>
               </div>
 
-              {% else %}
-
-              <div class="cart_item_text">
-                н/д
+              <div class="cart_item_cell cart_info_col">
+                <div class="cart_item_title">Цена</div>
+                {% if price != 0 %}
+                  <div class="cart_item_text">{{ '%.2f'|format(price) }} руб.</div>
+                {% else %}
+                  <div class="cart_item_text">н/д</div>
+                {% endif %}
               </div>
 
-              {% endif %}
+              <div class="cart_item_cell cart_info_col">
+                <div class="cart_item_title">Legit Check</div>
+                <div class="cart_item_text">3100 руб.</div>
+              </div>
 
+              <div class="cart_item_cell cart_info_col">
+                <div class="cart_item_title">Итого</div>
+                <div class="cart_item_text prod_total">
+                  {{ '%.2f'|format(price * quantity + 3100) }} руб.
+                </div>
+              </div>
             </div>
-
-
-            <div class="cart_item_cell cart_info_col">
-
-              <div class="cart_item_title">
-                Legit Check
-              </div>
-
-              <div class="cart_item_text">
-                3100 руб.
-              </div>
-
-            </div>
-
-
-            <div class="cart_item_cell cart_info_col">
-
-              <div class="cart_item_title">
-                Итого
-              </div>
-
-              <div class="cart_item_text prod_total">
-                {{ price * quantity + 3100 }} руб.
-              </div>
-
-            </div>
-
           </div>
-
-        </div>
-
-      </li>
-
+        </li>
       {% endfor %}
-
     </ul>
-
   </div>
-
 
   <div class="order_total">
-
-    <p>
-      Всего:
-    </p>
-
-    <p class="order_total_amount">
-      {{ total }} руб.
-    </p>
-
+    <p>Всего:</p>
+    <p class="order_total_amount">{{ '%.2f'|format(total) }} руб.</p>
   </div>
 
-
   <div class="cart_control">
-
-    <a
-      href="{{ url_for('legit.legit_check') }}"
-      style="width: 45%"
-      class="
-        btn
-        btn-outline-success
-        d-flex
-        align-items-center
-        justify-content-center
-      "
-    >
+    <a href="{{ url_for('legit.legit_check') }}"
+       style="width: 45%"
+       class="btn btn-outline-success d-flex align-items-center justify-content-center">
       Legit Check
     </a>
 
-    <button
-      id="order"
-      type="button"
-      style="width: 45%"
-      class="btn btn-outline-success"
-    >
+    <button id="order"
+            type="button"
+            style="width: 45%"
+            class="btn btn-outline-success">
       Заказать
     </button>
-
   </div>
-
 </div>
 
-
 <script>
+  function format_money(value) {
+    return Number(value).toFixed(2);
+  }
+
 
   function count_total() {
     let total = 0;
@@ -489,7 +352,6 @@
     $('.cart_div')
       .not('.not_include')
       .each(function () {
-
         const product = $(this);
 
         const price = Number(
@@ -506,8 +368,9 @@
         );
       });
 
-    $('.order_total_amount')
-      .text(total + ' руб.');
+    $('.order_total_amount').text(
+      format_money(total) + ' руб.'
+    );
   }
 
 
@@ -527,32 +390,36 @@
 
     product
       .find('.prod_total')
-      .text(total + ' руб.');
+      .text(
+        format_money(total)
+        + ' руб.'
+      );
   }
 
 
-  function update_cart_title(count) {
+  function update_cart_count(count) {
     let text;
 
     if (count === 0) {
-      text =
-        'Избранное <small>(нет товаров)</small>';
+      text = 'нет товаров';
 
     } else if (
       count % 10 === 1
       && count % 100 !== 11
     ) {
-      text =
-        `Избранное <small>(${count} товар)</small>`;
+      text = `${count} товар`;
+
+    } else if (
+      [2, 3, 4].includes(count % 10)
+      && ![12, 13, 14].includes(count % 100)
+    ) {
+      text = `${count} товара`;
 
     } else {
-      text =
-        `Избранное <small>(${count} товара(-ов))</small>`;
+      text = `${count} товаров`;
     }
 
-    $('.for_inner').html(
-      `<div class="mb-4 cart_title">${text}</div>`
-    );
+    $('#cart-page-count').text(text);
   }
 
 
@@ -560,7 +427,6 @@
     'mouseenter',
     '.cart_div',
     function () {
-
       $(this)
         .find('.cross')
         .css('opacity', '1');
@@ -572,7 +438,6 @@
     'mouseleave',
     '.cart_div',
     function () {
-
       $(this)
         .find('.cross')
         .css('opacity', '0');
@@ -584,7 +449,6 @@
     'click',
     '.none_plus, .none_minus',
     function (event) {
-
       event.preventDefault();
 
       const button = $(this);
@@ -603,11 +467,8 @@
         'data-product'
       );
 
-
       $.ajax({
-
         url: "{{ url_for('catalog.amount') }}",
-
         type: 'POST',
 
         data: {
@@ -615,9 +476,7 @@
           action: action
         },
 
-
         success: function (response) {
-
           const quantity = Number(
             response.quantity
           );
@@ -632,20 +491,16 @@
             .text(quantity);
 
           count_prod_total(product);
-
           count_total();
         },
 
-
         error: function (xhr) {
-
           console.error(
             'Amount error:',
             xhr.status,
             xhr.responseText
           );
         }
-
       });
     }
   );
@@ -655,7 +510,6 @@
     'click',
     '.cross',
     function (event) {
-
       event.preventDefault();
 
       const product = $(this).closest(
@@ -666,67 +520,55 @@
         'data-product'
       );
 
-
       $.ajax({
+        url: "{{ url_for('catalog.toggle_favorite') }}",
+        type: 'POST',
 
-        url: "{{ url_for(
-        'catalog.toggle_favorite'
-      ) }}",
+        data: {
+          liked_id: productId,
+          liked_price: 0,
+          action: 'dislike'
+        },
 
-  type: 'POST',
+        success: function (response) {
+          update_cart_count(
+            response.cart_count
+          );
 
-    data: {
-    liked_id: productId,
-      liked_price: 0,
-      action: 'dislike'
-  },
+          update_cart_badge(
+            response.cart_count
+          );
 
+          product.addClass(
+            'not_include'
+          );
 
-  success: function (response) {
+          product.css({
+            opacity: '0',
+            maxHeight: '0',
+            paddingTop: '0',
+            zIndex: '0'
+          });
 
-    update_cart_title(
-      response.cart_count
-    );
+          count_total();
 
-    update_cart_badge(
-      response.cart_count
-    );
+          setTimeout(
+            function () {
+              product.remove();
+            },
+            500
+          );
+        },
 
-    product.addClass(
-      'not_include'
-    );
-
-    product.css({
-      opacity: '0',
-      maxHeight: '0',
-      paddingTop: '0',
-      zIndex: '0'
-    });
-
-    count_total();
-
-    setTimeout(
-      function () {
-        product.remove();
-      },
-      500
-    );
-  },
-
-
-  error: function (xhr) {
-
-    console.error(
-      'Delete error:',
-      xhr.status,
-      xhr.responseText
-    );
-  }
-
-  });
-  }
+        error: function (xhr) {
+          console.error(
+            'Delete error:',
+            xhr.status,
+            xhr.responseText
+          );
+        }
+      });
+    }
   );
-
 </script>
-
 {% endblock %}

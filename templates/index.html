@@ -132,6 +132,63 @@
     min-width: 0;
   }
 
+  .catalog-heading {
+    min-height: 3rem;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .catalog-heading__title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .catalog-category-chip {
+    min-height: 2.5rem;
+    margin-left: auto;
+    padding: .45rem .5rem .45rem 1rem;
+    border: .0625rem solid #d9ded6;
+    border-radius: 999rem;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    color: #323832;
+    font-size: 1.08rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .catalog-category-chip__clear {
+    width: 1.7rem;
+    height: 1.7rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #6e756a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color .15s ease,
+      color .15s ease;
+  }
+
+  .catalog-category-chip__clear:hover {
+    background: #eef2eb;
+    color: #222;
+  }
+
   .product-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -466,6 +523,33 @@
     </aside>
 
     <section class="catalog-content">
+      <div class="catalog-heading">
+        <h1 class="catalog-heading__title">
+          Каталог
+        </h1>
+
+        {% if selected_category %}
+        <div
+          id="catalog-category-chip"
+          class="catalog-category-chip"
+        >
+          <span>
+            {{ selected_category.title }}
+          </span>
+
+          <button
+            id="clear-category-button"
+            class="catalog-category-chip__clear"
+            type="button"
+            aria-label="Сбросить категорию"
+            title="Сбросить категорию"
+          >
+            ×
+          </button>
+        </div>
+        {% endif %}
+      </div>
+
       <div
         id="product-grid"
         class="product-grid"
@@ -574,6 +658,14 @@
     const loadMoreButton = document.getElementById('load-more-button');
     const loading = document.getElementById('catalog-loading');
     const emptyState = document.getElementById('catalog-empty');
+
+    const categoryChip = document.getElementById(
+      'catalog-category-chip'
+    );
+
+    const clearCategoryButton = document.getElementById(
+      'clear-category-button'
+    );
 
     const priceMin = document.getElementById('price-min');
     const priceMax = document.getElementById('price-max');
@@ -884,6 +976,23 @@
       );
     }
 
+    if (clearCategoryButton) {
+      clearCategoryButton.addEventListener(
+        'click',
+        () => {
+          activeCategoryId = null;
+
+          if (categoryChip) {
+            categoryChip.remove();
+          }
+
+          loadProducts({
+            append: false
+          });
+        }
+      );
+    }
+
     resetButton.addEventListener(
       'click',
       () => {
@@ -895,6 +1004,10 @@
         });
 
         activeCategoryId = null;
+
+        if (categoryChip) {
+          categoryChip.remove();
+        }
 
         validatePrices();
 

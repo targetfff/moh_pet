@@ -1,5 +1,6 @@
 import random
 import time
+from datetime import datetime
 
 from flask import current_app, render_template, request, session
 from flask_login import current_user, login_required
@@ -9,9 +10,11 @@ from sqlalchemy.orm import aliased
 from app.extensions import db
 from app.models import (
     Advertisement,
+    CartItem,
     Categories,
     Offers,
     Products,
+    RecentView,
     Vendors,
     product_categories,
 )
@@ -21,40 +24,20 @@ from .utils import chunks
 
 
 CATALOG_PAGE_SIZE = 12
+RECENT_LIMIT = 14
 
 
 def _liked_product_ids():
-    """Возвращает id товаров из корзины текущего пользователя."""
-    if (
-        not current_user.is_authenticated
-        or not current_user.cart
-    ):
+    if not current_user.is_authenticated:
         return []
 
-    liked = []
-
-    for item in current_user.cart.strip(", ").split(", "):
-        parts = item.split()
-
-        if not parts:
-            continue
-
-        try:
-            liked.append(int(parts[0]))
-        except (TypeError, ValueError):
-            continue
-
-    return liked
+    return [
+        item.product_id
+        for item in current_user.cart_items
+    ]
 
 
 def _parse_vendor_ids():
-    """
-    GET-параметр vendor может присутствовать несколько раз:
-
-        ?vendor=1&vendor=5
-
-    Возвращаем уникальные положительные id.
-    """
     vendor_ids = []
 
     for raw_value in request.args.getlist("vendor"):
@@ -66,17 +49,21 @@ def _parse_vendor_ids():
         if vendor_id > 0:
             vendor_ids.append(vendor_id)
 
-    return list(dict.fromkeys(vendor_ids))
+    return list(
+        dict.fromkeys(vendor_ids)
+    )
 
 
 def _catalog_filters():
-    """Читает и нормализует фильтры каталога из query string."""
     category_id = request.args.get(
         "category",
         type=int,
     )
 
-    if category_id is not None and category_id <= 0:
+    if (
+        category_id is not None
+        and category_id <= 0
+    ):
         category_id = None
 
     min_price = request.args.get(
@@ -90,10 +77,16 @@ def _catalog_filters():
     )
 
     if min_price is not None:
-        min_price = max(0.0, min_price)
+        min_price = max(
+            0.0,
+            min_price,
+        )
 
     if max_price is not None:
-        max_price = max(0.0, max_price)
+        max_price = max(
+            0.0,
+            max_price,
+        )
 
     return {
         "category_id": category_id,
@@ -103,19 +96,16 @@ def _catalog_filters():
     }
 
 
-def _category_descendants_cte(category_id):
-    """
-    Recursive CTE: выбранная категория + все её потомки.
-
-    Это часть ТОГО ЖЕ SQL-запроса, который получает товары.
-    Отдельного SELECT к Categories больше нет.
-    """
+def _category_descendants_cte(
+        category_id,
+):
     descendants = (
         select(
             Categories.id.label("id")
         )
         .where(
-            Categories.id == category_id
+            Categories.id
+            == category_id
         )
         .cte(
             "category_descendants",
@@ -125,12 +115,14 @@ def _category_descendants_cte(category_id):
 
     child = aliased(Categories)
 
-    descendants = descendants.union_all(
-        select(
-            child.id
-        ).where(
-            child.parent
-            == descendants.c.id
+    descendants = (
+        descendants.union_all(
+            select(
+                child.id
+            ).where(
+                child.parent
+                == descendants.c.id
+            )
         )
     )
 
@@ -138,21 +130,20 @@ def _category_descendants_cte(category_id):
 
 
 def _catalog_products_query(filters):
-    """
-    Строит SQL-запрос каталога.
-
-    Семантика фильтров совпадает со старой главной:
-    - категория: товар содержит выбранную категорию;
-    - продавцы: товар продаёт хотя бы один выбранный продавец;
-    - цена: фильтруем по Products.price, то есть по отображаемой
-      минимальной цене товара.
-    """
     query = Products.query
 
-    category_id = filters["category_id"]
-    vendor_ids = filters["vendor_ids"]
-    min_price = filters["min_price"]
-    max_price = filters["max_price"]
+    category_id = filters[
+        "category_id"
+    ]
+    vendor_ids = filters[
+        "vendor_ids"
+    ]
+    min_price = filters[
+        "min_price"
+    ]
+    max_price = filters[
+        "max_price"
+    ]
 
     if category_id is not None:
         descendants = (
@@ -183,22 +174,27 @@ def _catalog_products_query(filters):
             query
             .join(
                 Offers,
-                Offers.product_id == Products.id,
+                Offers.product_id
+                == Products.id,
             )
             .filter(
-                Offers.vendor_id.in_(vendor_ids)
+                Offers.vendor_id.in_(
+                    vendor_ids
+                )
             )
             .distinct()
         )
 
     if min_price is not None:
         query = query.filter(
-            Products.price >= min_price
+            Products.price
+            >= min_price
         )
 
     if max_price is not None:
         query = query.filter(
-            Products.price <= max_price
+            Products.price
+            <= max_price
         )
 
     return query.order_by(
@@ -207,23 +203,30 @@ def _catalog_products_query(filters):
     )
 
 
-def _load_catalog_page(filters, offset=0):
-    """
-    Загружаем PAGE_SIZE + 1 строку.
-
-    Отдельный COUNT(*) не нужен:
-    13-й товар означает, что после первых 12 есть следующая пачка.
-    """
-    offset = max(0, offset)
+def _load_catalog_page(
+        filters,
+        offset=0,
+):
+    offset = max(
+        0,
+        offset,
+    )
 
     rows = (
-        _catalog_products_query(filters)
+        _catalog_products_query(
+            filters
+        )
         .offset(offset)
-        .limit(CATALOG_PAGE_SIZE + 1)
+        .limit(
+            CATALOG_PAGE_SIZE + 1
+        )
         .all()
     )
 
-    has_more = len(rows) > CATALOG_PAGE_SIZE
+    has_more = (
+        len(rows)
+        > CATALOG_PAGE_SIZE
+    )
 
     return (
         rows[:CATALOG_PAGE_SIZE],
@@ -232,16 +235,12 @@ def _load_catalog_page(filters, offset=0):
 
 
 def _catalog_vendors():
-    """
-    Только продавцы, у которых существует хотя бы один Offer.
-
-    Один SQL-запрос, без N+1.
-    """
     vendors = (
         Vendors.query
         .join(
             Offers,
-            Offers.vendor_id == Vendors.id,
+            Offers.vendor_id
+            == Vendors.id,
         )
         .distinct()
         .all()
@@ -250,7 +249,10 @@ def _catalog_vendors():
     return sorted(
         vendors,
         key=lambda vendor: (
-            (vendor.title or "").lower(),
+            (
+                vendor.title
+                or ""
+            ).lower(),
             vendor.name.lower(),
             vendor.surname.lower(),
         ),
@@ -258,14 +260,11 @@ def _catalog_vendors():
 
 
 def _pick_advertisement():
-    """
-    Сохраняем существующую логику показа рекламы:
-    не чаще AD_INTERVAL_SECONDS и по возможности
-    не повторяем предыдущую рекламу.
-    """
-    ad_interval = current_app.config[
-        "AD_INTERVAL_SECONDS"
-    ]
+    ad_interval = (
+        current_app.config[
+            "AD_INTERVAL_SECONDS"
+        ]
+    )
 
     now = time.time()
 
@@ -274,7 +273,10 @@ def _pick_advertisement():
         0,
     )
 
-    if now - last_ad_time < ad_interval:
+    if (
+        now - last_ad_time
+        < ad_interval
+    ):
         return None
 
     ads = Advertisement.query.all()
@@ -282,7 +284,9 @@ def _pick_advertisement():
     if not ads:
         return None
 
-    last_ad_id = session.get("last_ad_id")
+    last_ad_id = session.get(
+        "last_ad_id"
+    )
 
     if (
         len(ads) > 1
@@ -290,36 +294,39 @@ def _pick_advertisement():
     ):
         available_ads = [
             advertisement
-            for advertisement in ads
-            if advertisement.id != last_ad_id
+            for advertisement
+            in ads
+            if (
+                advertisement.id
+                != last_ad_id
+            )
         ]
     else:
         available_ads = ads
 
-    ad = random.choice(available_ads)
+    ad = random.choice(
+        available_ads
+    )
 
-    session["last_ad_time"] = now
-    session["last_ad_id"] = ad.id
+    session[
+        "last_ad_time"
+    ] = now
+
+    session[
+        "last_ad_id"
+    ] = ad.id
 
     return ad
 
 
 def _category_tree_payload():
-    """
-    Строит всё дерево категорий из ОДНОГО SQL-запроса.
-
-    Формат:
-    [
-        {
-            "id": 1,
-            "title": "Игрушки",
-            "children": [...]
-        }
-    ]
-    """
-    categories = Categories.query.order_by(
-        Categories.title.asc()
-    ).all()
+    categories = (
+        Categories.query
+        .order_by(
+            Categories.title.asc()
+        )
+        .all()
+    )
 
     if not categories:
         return []
@@ -341,28 +348,45 @@ def _category_tree_payload():
         category
         for category in categories
         if (
-            category.parent in (None, 0)
-            or category.parent not in ids
+            category.parent
+            in (None, 0)
+            or category.parent
+            not in ids
         )
     ]
 
-    def serialize(category, parents):
-        # Защита от случайного цикла в данных.
+    def serialize(
+            category,
+            parents,
+    ):
         if category.id in parents:
             return {
                 "id": category.id,
-                "title": category.title or "",
+                "title": (
+                    category.title
+                    or ""
+                ),
                 "children": [],
             }
 
-        next_parents = parents | {category.id}
+        next_parents = (
+            parents
+            | {category.id}
+        )
 
         return {
             "id": category.id,
-            "title": category.title or "",
+            "title": (
+                category.title
+                or ""
+            ),
             "children": [
-                serialize(child, next_parents)
-                for child in children_by_parent.get(
+                serialize(
+                    child,
+                    next_parents,
+                )
+                for child
+                in children_by_parent.get(
                     category.id,
                     [],
                 )
@@ -370,46 +394,127 @@ def _category_tree_payload():
         }
 
     return [
-        serialize(category, set())
+        serialize(
+            category,
+            set(),
+        )
         for category in roots
     ]
+
+
+def _record_recent_view(
+        product_id,
+):
+    if (
+        not current_user.is_authenticated
+        or current_user.status
+        != "client"
+    ):
+        return False
+
+    recent_rows = (
+        RecentView.query
+        .filter_by(
+            user_id=current_user.id
+        )
+        .order_by(
+            RecentView.viewed_at.desc(),
+            RecentView.id.desc(),
+        )
+        .limit(RECENT_LIMIT)
+        .all()
+    )
+
+    if (
+        recent_rows
+        and recent_rows[0].product_id
+        == product_id
+    ):
+        # Уже самый свежий товар:
+        # порядок истории не меняется,
+        # поэтому лишний UPDATE не нужен.
+        return False
+
+    now = datetime.now()
+
+    existing = next(
+        (
+            row
+            for row in recent_rows
+            if (
+                row.product_id
+                == product_id
+            )
+        ),
+        None,
+    )
+
+    if existing is not None:
+        existing.viewed_at = now
+        return True
+
+    db.session.add(
+        RecentView(
+            user_id=current_user.id,
+            product_id=product_id,
+            viewed_at=now,
+        )
+    )
+
+    if (
+        len(recent_rows)
+        >= RECENT_LIMIT
+    ):
+        db.session.delete(
+            recent_rows[-1]
+        )
+
+    return True
 
 
 @catalog_bp.route("/")
 def index():
     filters = _catalog_filters()
 
-    products, has_more = _load_catalog_page(
-        filters,
-        offset=0,
+    products, has_more = (
+        _load_catalog_page(
+            filters,
+            offset=0,
+        )
     )
 
     vendors = _catalog_vendors()
     liked = _liked_product_ids()
     ad = _pick_advertisement()
 
+    selected_category = None
+
+    if filters["category_id"] is not None:
+        selected_category = db.session.get(
+            Categories,
+            filters["category_id"],
+        )
+
     return render_template(
         "index.html",
-        data=list(chunks(products, 3)),
+        data=list(
+            chunks(
+                products,
+                3,
+            )
+        ),
         ad=ad,
         vendors=vendors,
         liked=liked,
         has_more=has_more,
+        selected_category=selected_category,
     )
 
 
-@catalog_bp.get("/products/load-more")
+@catalog_bp.get(
+    "/products/load-more"
+)
 def load_more_products():
-    """
-    AJAX endpoint для:
-    - кнопки "Загрузить ещё";
-    - смены цены;
-    - смены продавца;
-    - выбора категории.
-
-    Возвращает готовые карточки, чтобы initial render
-    и AJAX использовали один и тот же Jinja partial.
-    """
     filters = _catalog_filters()
 
     offset = request.args.get(
@@ -421,9 +526,11 @@ def load_more_products():
     if offset is None:
         offset = 0
 
-    products, has_more = _load_catalog_page(
-        filters,
-        offset=offset,
+    products, has_more = (
+        _load_catalog_page(
+            filters,
+            offset=offset,
+        )
     )
 
     html = render_template(
@@ -438,59 +545,44 @@ def load_more_products():
         "has_more": has_more,
         "loaded": len(products),
         "next_offset": (
-            max(0, offset)
+            max(
+                0,
+                offset,
+            )
             + len(products)
         ),
     }
 
 
-@catalog_bp.get("/categories/tree")
+@catalog_bp.get(
+    "/categories/tree"
+)
 def categories_tree():
-    """
-    Меню категорий загружается только при первом открытии.
-    Сам endpoint делает один SELECT по Categories.
-    """
     return {
-        "categories": _category_tree_payload(),
+        "categories":
+            _category_tree_payload(),
     }
 
 
-@catalog_bp.route("/product/<int:id>")
+@catalog_bp.route(
+    "/product/<int:id>"
+)
 def product(id):
-    product = Products.query.filter(
-        Products.id == id
-    ).first_or_404()
+    product = (
+        Products.query
+        .filter(
+            Products.id == id
+        )
+        .first_or_404()
+    )
 
-    recent_changed = False
     liked = _liked_product_ids()
 
-    if (
-        current_user.is_authenticated
-        and current_user.status == "client"
-    ):
-        recent = current_user.recent
-
-        if recent:
-            recent_ids = recent.split()
-            product_id = str(id)
-
-            if product_id in recent_ids:
-                recent_ids.remove(product_id)
-
-            recent_ids.append(product_id)
-
-            if len(recent_ids) > 14:
-                recent_ids.pop(0)
-
-            new_recent = " ".join(recent_ids)
-
-            if new_recent != current_user.recent:
-                current_user.recent = new_recent
-                recent_changed = True
-
-        else:
-            current_user.recent = str(id)
-            recent_changed = True
+    recent_changed = (
+        _record_recent_view(
+            product.id
+        )
+    )
 
     offers_with_vendors = (
         db.session.query(
@@ -499,10 +591,12 @@ def product(id):
         )
         .join(
             Vendors,
-            Vendors.id == Offers.vendor_id,
+            Vendors.id
+            == Offers.vendor_id,
         )
         .filter(
-            Offers.product_id == id
+            Offers.product_id
+            == id
         )
         .order_by(
             Offers.price.asc()
@@ -513,20 +607,28 @@ def product(id):
     vendors = []
     vendor_prices = {}
 
-    for offer, vendor in offers_with_vendors:
-        vendors.append(vendor)
-        vendor_prices[vendor.id] = offer.price
+    for (
+        offer,
+        vendor,
+    ) in offers_with_vendors:
+        vendors.append(
+            vendor
+        )
+
+        vendor_prices[
+            vendor.id
+        ] = offer.price
 
     response = render_template(
         "product.html",
         liked=liked,
         product=product,
         vendors=vendors,
-        ven_prices=vendor_prices.items(),
+        ven_prices=(
+            vendor_prices.items()
+        ),
     )
 
-    # Commit после render, чтобы SQLAlchemy не протухал
-    # product/offers до формирования HTML.
     if recent_changed:
         db.session.commit()
 
@@ -536,60 +638,36 @@ def product(id):
 @catalog_bp.route("/cart")
 @login_required
 def cart():
-    if not current_user.cart:
-        return render_template(
-            "cart.html",
-            total=0,
-            prods=[],
-            liked=[],
-        )
-
-    raw_items = (
-        current_user.cart
-        .strip(", ")
-        .split(", ")
+    items = sorted(
+        current_user.cart_items,
+        key=lambda item: (
+            item.created_at,
+            item.id,
+        ),
     )
 
-    parsed_items = []
-    product_ids = []
-
-    for item in raw_items:
-        parts = item.split()
-
-        if len(parts) != 3:
-            continue
-
-        try:
-            product_id = int(parts[0])
-            price = float(parts[1])
-            quantity = int(parts[2])
-        except (TypeError, ValueError):
-            continue
-
-        if price == -1:
-            price = 0
-
-        parsed_items.append(
-            (
-                product_id,
-                price,
-                quantity,
-            )
-        )
-
-        product_ids.append(product_id)
-
-    if not product_ids:
+    if not items:
         return render_template(
             "cart.html",
-            total=0,
+            total=0.0,
             prods=[],
             liked=[],
         )
 
-    products = Products.query.filter(
-        Products.id.in_(product_ids)
-    ).all()
+    product_ids = [
+        item.product_id
+        for item in items
+    ]
+
+    products = (
+        Products.query
+        .filter(
+            Products.id.in_(
+                product_ids
+            )
+        )
+        .all()
+    )
 
     products_by_id = {
         product.id: product
@@ -597,19 +675,33 @@ def cart():
     }
 
     cart_items = []
-    total = 0
+    liked = []
+    total = 0.0
 
-    for (
-        product_id,
-        price,
-        quantity,
-    ) in parsed_items:
-        product = products_by_id.get(
-            product_id
+    for item in items:
+        product = (
+            products_by_id.get(
+                item.product_id
+            )
         )
 
-        if not product:
+        if product is None:
             continue
+
+        price = item.price
+
+        if price == -1:
+            price = 0
+
+        price = round(
+            float(price),
+            2,
+        )
+
+        quantity = max(
+            1,
+            item.quantity,
+        )
 
         cart_items.append([
             product,
@@ -617,23 +709,30 @@ def cart():
             quantity,
         ])
 
-        total += (
+        liked.append(
+            product.id
+        )
+
+        line_total = round(
             price * quantity
-            + 3100
+            + 3100,
+            2,
+        )
+
+        total = round(
+            total + line_total,
+            2,
         )
 
     return render_template(
         "cart.html",
         total=total,
         prods=cart_items,
-        liked=product_ids,
+        liked=liked,
     )
 
 
-@catalog_bp.route(
-    "/amount",
-    methods=["POST"],
-)
+@catalog_bp.post("/amount")
 @login_required
 def amount():
     amount_id = request.form.get(
@@ -641,74 +740,67 @@ def amount():
         type=int,
     )
 
-    action = request.form.get("action")
+    action = request.form.get(
+        "action"
+    )
 
     if amount_id is None:
         return {
-            "error": "Product id is required"
+            "error":
+                "Product id is required"
         }, 400
 
-    if action not in {"plus", "minus"}:
+    if action not in {
+        "plus",
+        "minus",
+    }:
         return {
-            "error": "Unknown action"
+            "error":
+                "Unknown action"
         }, 400
 
-    if not current_user.cart:
+    item = next(
+        (
+            cart_item
+            for cart_item
+            in current_user.cart_items
+            if (
+                cart_item.product_id
+                == amount_id
+            )
+        ),
+        None,
+    )
+
+    if item is None:
         return {
-            "error": "Cart is empty"
-        }, 400
-
-    updated_cart = []
-    new_quantity = None
-
-    for item in current_user.cart.split(", "):
-        parts = item.split()
-
-        if len(parts) != 3:
-            continue
-
-        product_id, price, quantity = parts
-
-        try:
-            quantity = int(quantity)
-        except (TypeError, ValueError):
-            continue
-
-        if int(product_id) == amount_id:
-            if action == "plus":
-                quantity += 1
-
-            elif (
-                action == "minus"
-                and quantity > 1
-            ):
-                quantity -= 1
-
-            new_quantity = quantity
-
-        updated_cart.append(
-            f"{product_id} {price} {quantity}"
-        )
-
-    if new_quantity is None:
-        return {
-            "error": "Product not found"
+            "error":
+                "Product not found"
         }, 404
 
-    current_user.cart = ", ".join(
-        updated_cart
+    if action == "plus":
+        item.quantity += 1
+
+    elif (
+        action == "minus"
+        and item.quantity > 1
+    ):
+        item.quantity -= 1
+
+    new_quantity = (
+        item.quantity
     )
 
     db.session.commit()
 
     return {
-        "quantity": new_quantity,
+        "quantity":
+            new_quantity,
     }
 
 
-@catalog_bp.route(
-    "/favorites/toggle",
-    methods=["POST"],
+@catalog_bp.post(
+    "/favorites/toggle"
 )
 @login_required
 def toggle_favorite():
@@ -719,71 +811,84 @@ def toggle_favorite():
 
     if product_id is None:
         return {
-            "error": "liked_id is required"
+            "error":
+                "liked_id is required"
         }, 400
 
-    price = request.form.get(
-        "liked_price",
-        "",
-    ).rstrip(" руб.")
+    raw_price = (
+        request.form.get(
+            "liked_price",
+            "",
+        )
+        .replace(
+            "руб.",
+            "",
+        )
+        .strip()
+    )
 
-    if price and price != "undefined":
-        try:
-            price = float(price)
-        except ValueError:
-            price = 0.0
-    else:
+    try:
+        price = (
+            float(raw_price)
+            if (
+                raw_price
+                and raw_price
+                != "undefined"
+            )
+            else 0.0
+        )
+    except ValueError:
         price = 0.0
 
-    liked = {}
+    existing = next(
+        (
+            item
+            for item
+            in current_user.cart_items
+            if (
+                item.product_id
+                == product_id
+            )
+        ),
+        None,
+    )
 
-    if current_user.cart:
-        items = (
-            current_user.cart
-            .strip(", ")
-            .split(", ")
+    if existing is None:
+        item = CartItem(
+            product_id=product_id,
+            price=price,
+            quantity=1,
+            created_at=datetime.now(),
         )
 
-        for item in items:
-            item_data = item.split()
-
-            if len(item_data) != 3:
-                continue
-
-            try:
-                liked[int(item_data[0])] = [
-                    float(item_data[1]),
-                    int(item_data[2]),
-                ]
-            except (TypeError, ValueError):
-                continue
-
-    if product_id not in liked:
-        liked[product_id] = [
-            price,
-            1,
-        ]
+        current_user.cart_items.append(
+            item
+        )
 
         is_liked = True
 
     else:
-        liked.pop(product_id)
+        current_user.cart_items.remove(
+            existing
+        )
+
         is_liked = False
 
-    current_user.cart = ", ".join(
-        f"{item_id} {data[0]} {data[1]}"
-        for item_id, data in liked.items()
+    cart_count = len(
+        current_user.cart_items
     )
 
     db.session.commit()
 
     return {
         "liked": is_liked,
-        "cart_count": len(liked),
+        "cart_count": cart_count,
     }
 
 
-@catalog_bp.route("/buy/<int:cart_id>")
+@catalog_bp.route(
+    "/buy/<int:cart_id>"
+)
 def buy(cart_id):
     return render_template(
         "buy.html",

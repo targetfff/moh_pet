@@ -14,7 +14,8 @@ from app.models import (
     Products,
     Requests,
     Suggestions,
-    Users,
+    CartItem,
+    RecentView,
     product_categories,
 )
 
@@ -73,33 +74,19 @@ def resolve_categories(
     ]
 
 
+
 def remove_product_from_user_data(product_id):
-    product_id_str = str(product_id)
+    CartItem.query.filter_by(
+        product_id=product_id
+    ).delete(
+        synchronize_session=False
+    )
 
-    for user in Users.query.all():
-        if user.cart:
-            new_cart = []
-
-            for item in user.cart.strip(", ").split(", "):
-                parts = item.split()
-
-                if not parts:
-                    continue
-
-                if parts[0] != product_id_str:
-                    new_cart.append(item)
-
-            user.cart = ", ".join(new_cart) or None
-
-        if user.recent:
-            recent_ids = [
-                item
-                for item in user.recent.split()
-                if item != product_id_str
-            ]
-
-            user.recent = " ".join(recent_ids) or None
-
+    RecentView.query.filter_by(
+        product_id=product_id
+    ).delete(
+        synchronize_session=False
+    )
 
 # ----------------------------------------------------------------------
 # Seller request moderation
@@ -266,6 +253,9 @@ def reject_product_suggestion(suggestion_id):
 # ----------------------------------------------------------------------
 
 
+ADMIN_PRODUCTS_PAGE_SIZE = 24
+
+
 @admin_bp.get("/admin/products")
 @login_required
 def products():
@@ -274,14 +264,60 @@ def products():
             url_for("catalog.index")
         )
 
-    all_products = Products.query.order_by(
-        Products.date.desc()
-    ).all()
+    page = request.args.get(
+        "page",
+        1,
+        type=int,
+    )
+
+    if page is None or page < 1:
+        page = 1
+
+    offset = (
+        page - 1
+    ) * ADMIN_PRODUCTS_PAGE_SIZE
+
+    product_rows = (
+        Products.query
+        .order_by(
+            Products.date.desc(),
+            Products.id.desc(),
+        )
+        .offset(offset)
+        .limit(
+            ADMIN_PRODUCTS_PAGE_SIZE + 1
+        )
+        .all()
+    )
+
+    has_next = (
+        len(product_rows)
+        > ADMIN_PRODUCTS_PAGE_SIZE
+    )
+
+    all_products = product_rows[
+        :ADMIN_PRODUCTS_PAGE_SIZE
+    ]
+
+    if (
+            page > 1
+            and not all_products
+    ):
+        return redirect(
+            url_for(
+                "admin.products",
+                page=page - 1,
+            )
+        )
 
     approved_suggestions = (
         Suggestions.query
-        .filter(Suggestions.accepted.is_(True))
-        .order_by(Suggestions.date.desc())
+        .filter(
+            Suggestions.accepted.is_(True)
+        )
+        .order_by(
+            Suggestions.date.desc()
+        )
         .all()
     )
 
@@ -289,6 +325,9 @@ def products():
         "admin/products.html",
         products=all_products,
         approved_suggestions=approved_suggestions,
+        page=page,
+        has_prev=page > 1,
+        has_next=has_next,
     )
 
 
@@ -750,9 +789,17 @@ def delete_product(product_id):
 # ----------------------------------------------------------------------
 
 
-def get_descendant_category_ids(category_id):
-    categories = Categories.query.all()
+def get_descendant_category_ids(
+        category_id,
+        categories,
+):
+    """
+    Return descendant ids using categories that are already loaded.
 
+    edit_category() needs all categories for the parent selector anyway,
+    so doing another Categories.query.all() here was a duplicate full-table
+    SELECT. Reusing the existing list removes that extra SQL query.
+    """
     children = {}
 
     for category in categories:
@@ -953,7 +1000,8 @@ def edit_category(category_id):
     ).all()
 
     descendants = get_descendant_category_ids(
-        category.id
+        category.id,
+        all_categories,
     )
 
     available_parents = [

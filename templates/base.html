@@ -612,11 +612,7 @@
 
 <body>
 
-{% if current_user.is_authenticated and current_user.cart %}
-{% set cart_count = current_user.cart.strip(', ').split(', ') | length %}
-{% else %}
-{% set cart_count = 0 %}
-{% endif %}
+{% set cart_count = get_cart_count() %}
 
 <a href="{{ url_for('catalog.cart') }}">
   <div class="for_sticky_cart">
@@ -796,25 +792,25 @@
 </aside>
 
 {% with messages = get_flashed_messages() %}
-{% if messages %}
-<div class="container mt-3">
-  {% for message in messages %}
-  <div
-    class="alert alert-success alert-dismissible fade show"
-    role="alert"
-  >
-    {{ message }}
+  {% if messages %}
+  <div class="container mt-3">
+    {% for message in messages %}
+    <div
+      class="alert alert-success alert-dismissible fade show"
+      role="alert"
+    >
+      {{ message }}
 
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="alert"
-      aria-label="Close"
-    ></button>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
+    </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
-{% endif %}
+  {% endif %}
 {% endwith %}
 
 <div class="page-content">
@@ -1164,7 +1160,7 @@
           row.classList.toggle(
             'is-active',
             Number(row.dataset.categoryId)
-            === Number(categoryId)
+              === Number(categoryId)
           );
         });
     }
