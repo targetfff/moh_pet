@@ -1,13 +1,23 @@
-from flask import Flask
+from flask import (
+    Flask,
+    redirect,
+    request,
+    url_for,
+)
 from flask_login import current_user
 from sqlalchemy.orm import joinedload
 
 from config import Config
 
-from .extensions import db, login_manager, mail
+from .extensions import (
+    db,
+    limiter,
+    login_manager,
+    mail,
+)
 
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(
         __name__,
         template_folder="../templates",
@@ -16,19 +26,48 @@ def create_app():
 
     app.config.from_object(Config)
 
+    if test_config:
+        app.config.update(
+            test_config
+        )
+
+    if not app.config.get("SECRET_KEY"):
+        raise RuntimeError(
+            "SECRET_KEY is not configured."
+        )
+
+    if not app.config.get(
+        "SECURITY_PASSWORD_SALT"
+    ):
+        raise RuntimeError(
+            "SECURITY_PASSWORD_SALT is not configured."
+        )
+
     db.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
+    limiter.init_app(app)
 
     login_manager.login_view = "auth.login"
+    login_manager.login_message = (
+        "Войдите в аккаунт, чтобы продолжить."
+    )
 
-    from .performance import init_performance_logging
+    from .performance import (
+        init_performance_logging,
+    )
+
     init_performance_logging(app)
 
     from .models import Users
 
     @login_manager.user_loader
     def load_user(user_id):
+        try:
+            user_id = int(user_id)
+        except (TypeError, ValueError):
+            return None
+
         return (
             Users.query
             .options(
@@ -37,9 +76,33 @@ def create_app():
                 )
             )
             .filter(
-                Users.id == int(user_id)
+                Users.id == user_id
             )
             .first()
+        )
+
+    @app.before_request
+    def require_confirmed_email():
+        if (
+            not current_user.is_authenticated
+            or current_user.confirmed is True
+        ):
+            return None
+
+        allowed_endpoints = {
+            "auth.confirm_email",
+            "auth.logout",
+            "auth.resend_confirmation",
+            "auth.reset_password",
+            "auth.unconfirmed",
+            "static",
+        }
+
+        if request.endpoint in allowed_endpoints:
+            return None
+
+        return redirect(
+            url_for("auth.unconfirmed")
         )
 
     @app.context_processor
@@ -60,11 +123,11 @@ def create_app():
         }
 
     from .account import account_bp
+    from .admin import admin_bp
     from .auth import auth_bp
     from .catalog import catalog_bp
     from .legit import legit_bp
     from .seller import seller_bp
-    from .admin import admin_bp
 
     app.register_blueprint(admin_bp)
     app.register_blueprint(account_bp)

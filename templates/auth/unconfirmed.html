@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-<title>Подтверждение электронной почты</title>
+<title>Подтвердите электронную почту — MOH</title>
 {% endblock %}
 
 {% block styles %}
@@ -12,21 +12,58 @@
 {% endblock %}
 
 {% block body %}
-<div class="auth-page auth-message-page">
+<div class="auth-page">
   <div class="auth-message-card">
-    <h1>Подтвердите электронную почту</h1>
+    <h1>
+      Подтвердите электронную почту
+    </h1>
 
     <p>
-      Для продолжения подтвердите адрес электронной почты,
-      указанный при регистрации.
+      Мы отправили письмо со ссылкой
+      для подтверждения на
+      <strong>{{ current_user.email }}</strong>.
     </p>
 
-    <a
-      class="btn btn-outline-success"
-      href="{{ url_for('auth.resend_confirmation') }}"
+    <p class="auth-hint">
+      Пока почта не подтверждена,
+      часть возможностей аккаунта
+      недоступна.
+    </p>
+
+    <form
+      method="post"
+      action="{{ url_for('auth.resend_confirmation') }}"
+      class="auth-resend-form"
+      data-resend-confirmation-form
+      data-user-id="{{ current_user.id }}"
     >
-      Отправить письмо повторно
-    </a>
+      <button
+        type="submit"
+        class="btn btn-outline-success"
+        data-resend-confirmation-button
+      >
+        Отправить письмо повторно
+      </button>
+    </form>
+
+    <p
+      class="auth-resend-status"
+      data-resend-confirmation-status
+      aria-live="polite"
+      hidden
+    ></p>
+
+    <p class="auth-secondary-action">
+      <a href="{{ url_for('auth.logout') }}">
+        Выйти из аккаунта
+      </a>
+    </p>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/pages/unconfirmed.js') }}"
+></script>
 {% endblock %}

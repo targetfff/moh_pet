@@ -19,15 +19,16 @@
     <form
       class="auth-form"
       method="post"
-      enctype="multipart/form-data"
     >
       <div class="form-floating">
         <input
-          type="text"
+          type="email"
           class="form-control"
           name="email"
           id="email"
           placeholder="name@example.com"
+          autocomplete="email"
+          maxlength="254"
           required
         >
         <label for="email">
@@ -42,6 +43,8 @@
           id="password"
           name="password"
           placeholder="Пароль"
+          autocomplete="current-password"
+          maxlength="60"
           required
         >
         <label for="password">
@@ -49,20 +52,29 @@
         </label>
       </div>
 
-      <div class="form-check text-start">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value="remember-me"
-          id="flexCheckDefault"
-          name="remember_me"
+      <div class="auth-row">
+        <div class="form-check text-start">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            value="remember-me"
+            id="flexCheckDefault"
+            name="remember_me"
+          >
+          <label
+            class="form-check-label"
+            for="flexCheckDefault"
+          >
+            Запомнить меня
+          </label>
+        </div>
+
+        <a
+          class="auth-link"
+          href="{{ url_for('auth.forgot_password') }}"
         >
-        <label
-          class="form-check-label"
-          for="flexCheckDefault"
-        >
-          Запомнить меня
-        </label>
+          Забыли пароль?
+        </a>
       </div>
 
       <div class="auth-form__buttons auth-form__buttons--single">

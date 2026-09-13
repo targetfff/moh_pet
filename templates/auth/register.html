@@ -19,7 +19,6 @@
     <form
       class="auth-form"
       method="post"
-      enctype="multipart/form-data"
     >
       <div class="form-floating">
         <input
@@ -28,6 +27,9 @@
           name="name"
           id="name"
           placeholder="Имя"
+          value="{{ form_data.name|default('') }}"
+          autocomplete="given-name"
+          maxlength="50"
           required
         >
         <label for="name">
@@ -42,6 +44,9 @@
           name="surname"
           id="surname"
           placeholder="Фамилия"
+          value="{{ form_data.surname|default('') }}"
+          autocomplete="family-name"
+          maxlength="50"
           required
         >
         <label for="surname">
@@ -51,11 +56,14 @@
 
       <div class="form-floating">
         <input
-          type="text"
+          type="tel"
           class="form-control"
           name="phone"
           id="phone"
-          placeholder="Номер телефона"
+          placeholder="+7 (999) 999-99-99"
+          value="{{ form_data.phone|default('') }}"
+          autocomplete="tel"
+          maxlength="18"
           required
         >
         <label for="phone">
@@ -65,11 +73,14 @@
 
       <div class="form-floating">
         <input
-          type="text"
+          type="email"
           class="form-control"
           name="email"
           id="email"
           placeholder="name@example.com"
+          value="{{ form_data.email|default('') }}"
+          autocomplete="email"
+          maxlength="254"
           required
         >
         <label for="email">
@@ -84,11 +95,19 @@
           id="password"
           name="password"
           placeholder="Пароль"
+          autocomplete="new-password"
+          minlength="6"
+          maxlength="60"
           required
         >
         <label for="password">
           Пароль
         </label>
+      </div>
+
+      <div class="auth-hint">
+        Минимум 6 символов. Не используйте имя,
+        email, номер телефона или очевидный пароль.
       </div>
 
       <div class="form-floating">
@@ -98,6 +117,9 @@
           id="password2"
           name="password2"
           placeholder="Повторите пароль"
+          autocomplete="new-password"
+          minlength="6"
+          maxlength="60"
           required
         >
         <label for="password2">
