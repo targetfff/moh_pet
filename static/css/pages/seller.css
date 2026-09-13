@@ -1,0 +1,22 @@
+.seller-page {
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.seller-page__lead {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 15pt;
+}
+
+.seller-form {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.seller-form__file {
+  display: grid;
+  gap: .75rem;
+  margin-top: .5rem;
+}

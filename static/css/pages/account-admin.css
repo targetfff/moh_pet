@@ -1,0 +1,75 @@
+.account-page {
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.account-admin-title {
+  margin-bottom: .5em;
+}
+
+.admin-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-section {
+  margin-top: 1.5rem;
+}
+
+.admin-section-subtitle {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-request-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2%;
+}
+
+.admin-card-title {
+  font-size: 20px;
+}
+
+.admin-request-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.admin-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .6rem;
+}
+
+.admin-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+
+@media (max-width: 72rem) {
+  .admin-request-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 48rem) {
+  .admin-request-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grid-item {
+  transition:
+    opacity .3s ease,
+    transform .3s ease;
+}
+
+.admin-request-card--removed {
+  opacity: 0;
+  transform: scale(.98);
+}

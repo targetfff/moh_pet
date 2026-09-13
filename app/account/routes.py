@@ -34,7 +34,7 @@ def account():
         )
 
         return render_template(
-            "account.html",
+            "account/vendor.html",
             user=current_user,
             data=products,
             vendor=vendor,
@@ -85,7 +85,7 @@ def account():
         )
 
         return render_template(
-            "account.html",
+            "account/admin.html",
             user=current_user,
             data=[],
             reqs_data=requests_data,
@@ -119,7 +119,7 @@ def account():
     )
 
     return render_template(
-        "account.html",
+        "account/client.html",
         user=current_user,
         data=[],
         liked=liked,

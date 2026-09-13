@@ -1,0 +1,90 @@
+<div class="header">
+  <div class="header_container">
+    <div class="header_container_left">
+      <a
+        href="{{ url_for('catalog.index') }}"
+        class="header_brand_link"
+      >
+        <div class="header_logo">
+          <div class="header_logo__icon">
+            <img
+              src="{{ url_for('static', filename='const/logo_moh.png') }}"
+              class="header_logo__img"
+              alt="МоХ"
+            >
+          </div>
+
+          <div class="header_logo__title">
+            МоХ
+          </div>
+        </div>
+      </a>
+
+      <button
+        id="catalog-menu-toggle"
+        class="catalog-menu-toggle"
+        type="button"
+        aria-label="Открыть категории"
+        aria-expanded="false"
+      >
+        <span
+          class="catalog-menu-toggle__icon"
+          aria-hidden="true"
+        ></span>
+      </button>
+    </div>
+
+    <div class="header_container_row">
+      <a
+        href="{{ url_for('legit.legit_check') }}"
+        class="header_container_row__button2 hover-underline-animation"
+      >
+        Legit check
+      </a>
+
+      <a
+        href="#"
+        class="header_container_row__button2 hover-underline-animation"
+      >
+        Поддержка
+      </a>
+
+      {% if current_user.is_authenticated %}
+      <a
+        href="{{ url_for('account.account') }}"
+        class="header_container_row__button"
+      >
+        Личный кабинет
+      </a>
+
+      <a
+        href="{{ url_for('auth.logout') }}"
+        class="header_container_row__button"
+      >
+        Выйти
+      </a>
+      {% else %}
+      <a
+        href="{{ url_for('auth.login') }}"
+        class="header_container_row__button"
+      >
+        Войти
+      </a>
+
+      <a
+        href="{{ url_for('auth.register') }}"
+        class="header_container_row__button"
+      >
+        Регистрация
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="header__border"></div>
+</div>
+
+<div
+  class="header-spacer"
+  aria-hidden="true"
+></div>

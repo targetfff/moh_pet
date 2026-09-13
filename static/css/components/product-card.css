@@ -1,0 +1,129 @@
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.product-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: .0625rem solid var(--catalog-border, #e2e7df);
+  border-radius: .95rem;
+  background: #fff;
+  box-shadow: 0 .08rem .3rem rgb(0 0 0 / 8%);
+  cursor: pointer;
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-.12rem);
+  box-shadow: 0 .3rem 1rem rgb(0 0 0 / 12%);
+}
+
+.product-card__image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #fff;
+}
+
+.product-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-card__body {
+  padding: .9rem 1rem 1.1rem;
+}
+
+.product-card__title {
+  min-height: 2.6rem;
+  margin-bottom: .45rem;
+  font-size: .94rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.product-card__price {
+  min-height: 1.5rem;
+  font-size: .88rem;
+  text-align: center;
+}
+
+.product-card__unavailable {
+  color: var(--catalog-muted, #737373);
+}
+
+.favorite-toggle {
+  position: absolute;
+  top: .8rem;
+  right: .8rem;
+  z-index: 3;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 .08rem .3rem rgb(0 0 0 / 10%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.favorite-heart {
+  width: 1.55rem;
+  height: 1.55rem;
+  display: block;
+  overflow: visible;
+  transition: transform .2s ease;
+}
+
+.favorite-heart path {
+  fill: transparent;
+  stroke: #444;
+  stroke-width: 1.8;
+  transition:
+    fill .2s ease,
+    stroke .2s ease;
+}
+
+.favorite-toggle:hover .favorite-heart {
+  transform: scale(1.08);
+}
+
+.favorite-toggle:hover .favorite-heart path {
+  stroke: #e31b23;
+}
+
+.favorite-toggle.is-liked .favorite-heart path {
+  fill: #e31b23;
+  stroke: #e31b23;
+}
+
+.favorite-toggle.pop .favorite-heart {
+  animation: favorite-pop .32s ease;
+}
+
+@keyframes favorite-pop {
+  0% {
+    transform: scale(.7);
+  }
+
+  45% {
+    transform: scale(1.28);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,68 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100;0,300;0,500;0,600;1,100;1,200;1,400;1,500&display=swap");
+
+@font-face {
+  font-family: "Beryozki";
+  src: url("../const/Beryozki.ttf");
+}
+
+:root {
+  --header-height: 6rem;
+  --catalog-root-width: min(18rem, 82vw);
+  --catalog-detail-width: min(21rem, 86vw);
+  --catalog-border: #e2e7df;
+  --catalog-muted: #737373;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  scrollbar-gutter: stable;
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: clip;
+  background-color: #f4f8f4;
+}
+
+/*
+ * Не меняем overflow-y у body при открытии меню категорий:
+ * это меняет scroll-container и ломает position: sticky
+ * у page-level элементов вроде .filter-panel.
+ */
+
+body.modal-open {
+  padding-right: 0 !important;
+}
+
+body.modal-open .header {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+.card {
+  transition: box-shadow .5s;
+}
+
+.card:hover {
+  box-shadow: 0 .3rem .65rem gray !important;
+}
+
+.form-control:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 .2rem rgba(40, 167, 69, .25) !important;
+}

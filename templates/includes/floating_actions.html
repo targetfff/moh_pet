@@ -1,0 +1,37 @@
+<div class="floating-actions">
+  <a
+    class="floating-action-link"
+    href="{{ url_for('catalog.cart') }}"
+    aria-label="Корзина"
+  >
+    <div class="for_sticky_cart">
+      <i class="sticky_cart fa-solid fa-cart-shopping"></i>
+
+      <div
+        id="sticky-cart-badge"
+        class="sticky_cart_amount{% if cart_count > 0 %} is-visible{% endif %}"
+      >
+        <span
+          id="sticky_cart_span"
+          class="sticky_cart_amount__text{% if cart_count > 9 %} is-double-digit{% endif %}"
+        >
+          {% if cart_count > 9 %}
+            9+
+          {% elif cart_count > 0 %}
+            {{ cart_count }}
+          {% endif %}
+        </span>
+      </div>
+    </div>
+  </a>
+
+  <a
+    class="floating-action-link"
+    href="{{ url_for('catalog.cart') }}"
+    aria-label="Будущие уведомления"
+  >
+    <div class="for_sticky_bot">
+      <i class="sticky_bot fa-solid fa-robot"></i>
+    </div>
+  </a>
+</div>

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Личный кабинет</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/itc-slider.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/account-client.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div
+  id="client-account-config"
+  data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+  hidden
+></div>
+
+<div class="container account-page">
+  <h1>Личный кабинет</h1>
+
+  <section class="account-section">
+    <h3>История просмотра</h3>
+
+    <div class="container for_inner">
+      {% if recent %}
+      <div
+        class="itc-slider"
+        data-slider="itc-slider"
+        data-loop="false"
+      >
+        <div class="itc-slider-wrapper">
+          <div class="itc-slider-items">
+            {% for el in recent %}
+            {% set thumbnail_name = el.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+
+            <div class="itc-slider-item">
+              <article
+                class="card mb-4 rounded-3 shadow-sm recent-product-card"
+                data-url="{{ url_for('catalog.product', id=el.id) }}"
+              >
+                <div class="card-header py-3">
+                  <h5 class="my-0 fw-normal">
+                    {{ el.title }}
+                  </h5>
+                </div>
+
+                <div class="card-body">
+                  <div class="recent-product-image-wrap">
+                    <button
+                      type="button"
+                      class="favorite-toggle {% if el.id in liked %}is-liked{% endif %}"
+                      data-like="{{ el.id }}"
+                      data-price="{{ el.price if el.price is not none else -1 }}"
+                      data-liked="{{ 1 if el.id in liked else 0 }}"
+                      aria-label="{% if el.id in liked %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+                    >
+                      <svg
+                        class="favorite-heart"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 21.35l-1.45-1.32C5.4 15.36
+                             2 12.28 2 8.5 2 5.42 4.42 3 7.5 3
+                             c1.74 0 3.41.81 4.5 2.09
+                             C13.09 3.81 14.76 3 16.5 3
+                             19.58 3 22 5.42 22 8.5
+                             c0 3.78-3.4 6.86-8.55 11.54
+                             L12 21.35z"
+                        />
+                      </svg>
+                    </button>
+
+                    <a href="{{ url_for('catalog.product', id=el.id) }}">
+                      <img
+                        class="img-fluid recent-product-image"
+                        src="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
+                        data-fallback-src="{{ url_for('static', filename='img/' ~ el.main_image) }}"
+                        alt="{{ el.title }}"
+                        loading="lazy"
+                        decoding="async"
+                      >
+                    </a>
+                  </div>
+
+                  <ul class="list-unstyled mt-3 mb-4">
+                    <li>{{ el.description }}</li>
+                  </ul>
+                </div>
+              </article>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button
+          class="itc-slider-btn itc-slider-btn-prev"
+          type="button"
+          aria-label="Предыдущие товары"
+        ></button>
+
+        <button
+          class="itc-slider-btn itc-slider-btn-next"
+          type="button"
+          aria-label="Следующие товары"
+        ></button>
+      </div>
+      {% else %}
+      <div class="center-screen">
+        История просмотра пока пуста
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="account-section">
+    <h3>Мессенджер</h3>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/itc-slider.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/components/image-fallback.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/account-client.js') }}"
+></script>
+{% endblock %}

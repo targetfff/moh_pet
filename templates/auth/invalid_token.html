@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Недействительная ссылка</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/auth.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="auth-page auth-message-page">
+  <div class="auth-message-card">
+    <h1>Ссылка недействительна</h1>
+
+    <p>
+      Ссылка подтверждения недействительна или срок её действия истёк.
+    </p>
+
+    <a
+      class="btn btn-outline-primary"
+      href="{{ url_for('auth.login') }}"
+    >
+      Вернуться ко входу
+    </a>
+  </div>
+</div>
+{% endblock %}

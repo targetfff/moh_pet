@@ -1,0 +1,78 @@
+.account-page {
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.account-section {
+  margin-top: 2rem;
+}
+
+.targetff {
+  font-size: 14pt;
+}
+
+.vendor-profile {
+  margin: 1.5rem 5% 0;
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 5%;
+}
+
+.vendor-profile__logo-wrap {
+  min-width: 0;
+}
+
+.vendor-logo {
+  display: block;
+  max-width: 100%;
+  border-radius: 15px;
+}
+
+.vendor-profile__info {
+  min-width: 0;
+}
+
+.vendor-owner-name {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.vendor-field-group {
+  margin: 1.5rem 0;
+  display: grid;
+  gap: .75rem;
+}
+
+.vendor-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2em;
+}
+
+.for_vendor_form {
+  border-radius: 12px;
+  transition: all .5s;
+  height: 100%;
+  background-color: white;
+  padding: 2em;
+}
+
+.for_vendor_form:hover {
+  box-shadow: 0 5px 10px gray !important;
+}
+
+.vendor-form-field {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 58rem) {
+  .vendor-profile {
+    margin-left: 0;
+    margin-right: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .vendor-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

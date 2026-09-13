@@ -496,7 +496,7 @@ def index():
         )
 
     return render_template(
-        "index.html",
+        "catalog/index.html",
         data=list(
             chunks(
                 products,
@@ -620,7 +620,7 @@ def product(id):
         ] = offer.price
 
     response = render_template(
-        "product.html",
+        "catalog/product.html",
         liked=liked,
         product=product,
         vendors=vendors,
@@ -648,7 +648,7 @@ def cart():
 
     if not items:
         return render_template(
-            "cart.html",
+            "catalog/cart.html",
             total=0.0,
             prods=[],
             liked=[],
@@ -725,7 +725,7 @@ def cart():
         )
 
     return render_template(
-        "cart.html",
+        "catalog/cart.html",
         total=total,
         prods=cart_items,
         liked=liked,
@@ -891,6 +891,6 @@ def toggle_favorite():
 )
 def buy(cart_id):
     return render_template(
-        "buy.html",
+        "catalog/buy.html",
         cart_id=cart_id,
     )

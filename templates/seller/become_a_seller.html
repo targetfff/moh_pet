@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Стать продавцом</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/seller.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="container seller-page">
+  <h1>Стать продавцом</h1>
+
+  <p class="seller-page__lead">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Quis imperdiet massa tincidunt nunc pulvinar. Justo laoreet sit amet
+    cursus sit amet dictum sit. Facilisi etiam dignissim diam quis enim
+    lobortis.
+  </p>
+
+  <h2>
+    Заполните форму и оплатите вступительный взнос
+  </h2>
+
+  <form
+    class="seller-form"
+    action="{{ url_for('seller.become_a_seller') }}"
+    method="post"
+    enctype="multipart/form-data"
+  >
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="surname"
+        id="surname1"
+        placeholder="Фамилия"
+        required
+        readonly
+        value="{{ current_user.surname }}"
+      >
+      <label for="surname1">
+        Фамилия
+      </label>
+    </div>
+
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="name"
+        id="name1"
+        placeholder="Имя"
+        required
+        readonly
+        value="{{ current_user.name }}"
+      >
+      <label for="name1">
+        Имя
+      </label>
+    </div>
+
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="patronymic"
+        id="patronymic1"
+        placeholder="Отчество"
+        required
+      >
+      <label for="patronymic1">
+        Отчество
+      </label>
+    </div>
+
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="title"
+        id="title1"
+        placeholder="Название магазина (необязательно)"
+      >
+      <label for="title1">
+        Название магазина (необязательно)
+      </label>
+    </div>
+
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="phone"
+        id="phone1"
+        placeholder="+7 (999) 999-99-99"
+        required
+        readonly
+        value="{{ current_user.phone }}"
+      >
+      <label for="phone1">
+        Номер телефона
+      </label>
+    </div>
+
+    <div class="form-floating">
+      <input
+        type="text"
+        class="form-control"
+        name="email"
+        id="email1"
+        placeholder="your_email@example.com"
+        required
+        readonly
+        value="{{ current_user.email }}"
+      >
+      <label for="email1">
+        Адрес электронной почты
+      </label>
+    </div>
+
+    <div class="seller-form__file">
+      <label for="logo">
+        Добавьте квадратный логотип магазина (необязательно):
+      </label>
+
+      <input
+        type="file"
+        accept="image/*"
+        name="logo"
+        id="logo"
+      >
+    </div>
+
+    <div class="form-check text-start my-3">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        name="user_agreement"
+        id="user_agreement"
+        required
+      >
+      <label
+        class="form-check-label"
+        for="user_agreement"
+      >
+        Я даю
+        <a href="#">согласие на обработку персональных данных</a>
+        и заключение
+        <a href="#">договора</a>
+      </label>
+    </div>
+
+    <button
+      class="btn btn-success"
+      type="submit"
+    >
+      Оплатить
+    </button>
+  </form>
+</div>
+{% endblock %}

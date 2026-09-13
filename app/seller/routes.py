@@ -37,7 +37,7 @@ def become_a_seller():
 
     if request.method == "GET":
         return render_template(
-            "become_a_seller.html"
+            "seller/become_a_seller.html"
         )
 
     if not request.form.get("user_agreement"):
@@ -45,7 +45,7 @@ def become_a_seller():
             "Для регистрации продавца необходимо принять условия договора."
         )
         return render_template(
-            "become_a_seller.html"
+            "seller/become_a_seller.html"
         )
 
     existing_vendor = Vendors.query.filter_by(
@@ -73,7 +73,7 @@ def become_a_seller():
     if not patronymic:
         flash("Укажите отчество.")
         return render_template(
-            "become_a_seller.html"
+            "seller/become_a_seller.html"
         )
 
     logo = save_square_image(
@@ -103,7 +103,7 @@ def become_a_seller():
             "Не удалось зарегистрировать продавца."
         )
         return render_template(
-            "become_a_seller.html"
+            "seller/become_a_seller.html"
         )
 
     return redirect(

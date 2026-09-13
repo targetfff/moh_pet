@@ -6,34 +6,17 @@
 {% else %}
 <title>Изменение рекламы</title>
 {% endif %}
-
-<style>
-  .ad-form {
-    max-width: 760px;
-  }
-
-  .ad-form-card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5em;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .1);
-  }
-
-  .current-ad {
-    width: 100%;
-    max-height: 420px;
-    object-fit: contain;
-    margin-bottom: 1.5em;
-    border-radius: 10px;
-    background: #f5f5f5;
-  }
-</style>
 {% endblock %}
 
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/admin.css') }}"
+>
+{% endblock %}
 
 {% block body %}
-<div class="container ad-form">
-
+<div class="container admin-page admin-form-page admin-ad-form-page">
   {% if mode == "create" %}
   <h1 class="mb-4">
     Добавление рекламы
@@ -44,63 +27,53 @@
   </h1>
   {% endif %}
 
-
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  {% for message in messages %}
-  <div class="alert alert-info">
-    {{ message }}
-  </div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
-
-
-  <form method="post"
-        enctype="multipart/form-data"
-        class="ad-form-card">
-
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    class="admin-form-card"
+  >
     {% if mode == "edit" and ad %}
-    {% if ad.format == "video" %}
-    <video class="current-ad"
-           controls
-           muted
-           preload="metadata">
-      <source src="{{ url_for(
-                        'static',
-                        filename='ads/' + ad.filename
-                      ) }}">
-    </video>
-    {% else %}
-    <img class="current-ad"
-         src="{{ url_for(
-                  'static',
-                  filename='ads/' + ad.filename
-                ) }}"
-         alt="{{ ad.title }}">
+      {% if ad.format == "video" %}
+      <video
+        class="current-ad"
+        controls
+        muted
+        preload="metadata"
+      >
+        <source
+          src="{{ url_for('static', filename='ads/' ~ ad.filename) }}"
+        >
+      </video>
+      {% else %}
+      <img
+        class="current-ad"
+        src="{{ url_for('static', filename='ads/' ~ ad.filename) }}"
+        alt="{{ ad.title }}"
+      >
+      {% endif %}
     {% endif %}
-    {% endif %}
-
 
     <div class="form-floating mb-3">
-      <input class="form-control"
-             type="text"
-             name="title"
-             id="title"
-             placeholder="Название"
-             value="{% if ad %}{{ ad.title }}{% endif %}"
-             required>
+      <input
+        class="form-control"
+        type="text"
+        name="title"
+        id="title"
+        placeholder="Название"
+        value="{% if ad %}{{ ad.title }}{% endif %}"
+        required
+      >
 
       <label for="title">
         Название
       </label>
     </div>
 
-
     <div class="mb-4">
-      <label class="form-label"
-             for="media">
-
+      <label
+        class="form-label"
+        for="media"
+      >
         {% if mode == "create" %}
         Изображение или видео
         {% else %}
@@ -108,14 +81,16 @@
         {% endif %}
       </label>
 
-      <input class="form-control"
-             type="file"
-             id="media"
-             name="media"
-             accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-             {% if mode == "create" %}
-      required
-      {% endif %}>
+      <input
+        class="form-control"
+        type="file"
+        id="media"
+        name="media"
+        accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+        {% if mode == "create" %}
+        required
+        {% endif %}
+      >
 
       {% if mode == "edit" %}
       <div class="form-text">
@@ -124,10 +99,11 @@
       {% endif %}
     </div>
 
-
     <div class="d-flex gap-2">
-      <button class="btn btn-success"
-              type="submit">
+      <button
+        class="btn btn-success"
+        type="submit"
+      >
         {% if mode == "create" %}
         Добавить
         {% else %}
@@ -135,12 +111,13 @@
         {% endif %}
       </button>
 
-      <a class="btn btn-outline-primary"
-         href="{{ url_for('admin.ads') }}">
+      <a
+        class="btn btn-outline-primary"
+        href="{{ url_for('admin.ads') }}"
+      >
         Отмена
       </a>
     </div>
-
   </form>
 </div>
 {% endblock %}

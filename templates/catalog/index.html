@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Главная</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/components/product-card.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/catalog.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div
+  id="catalog-page-config"
+  data-products-url="{{ url_for('catalog.load_more_products') }}"
+  data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+  hidden
+></div>
+
+<main class="catalog-page">
+  <div class="catalog-layout">
+    <aside class="filter-panel">
+      <h2 class="filter-panel__title">Фильтры</h2>
+
+      <section class="filter-section">
+        <h3 class="filter-section__title">Цена</h3>
+
+        <div class="price-filter">
+          <input
+            id="price-min"
+            class="form-control"
+            type="number"
+            min="0"
+            step="1"
+            inputmode="numeric"
+            placeholder="от"
+            aria-label="Минимальная цена"
+          >
+
+          <input
+            id="price-max"
+            class="form-control"
+            type="number"
+            min="0"
+            step="1"
+            inputmode="numeric"
+            placeholder="до"
+            aria-label="Максимальная цена"
+          >
+        </div>
+      </section>
+
+      <section class="filter-section">
+        <h3 class="filter-section__title">Продавец</h3>
+
+        <div
+          id="vendor-filter-list"
+          class="vendor-filter-list"
+        >
+          {% for vendor in vendors %}
+          <label class="vendor-filter-item">
+            <input
+              class="vendor-filter"
+              type="checkbox"
+              value="{{ vendor.id }}"
+            >
+
+            <span>
+              {% if vendor.title %}
+                {{ vendor.title }}
+              {% else %}
+                {{ vendor.name }} {{ vendor.surname }}
+              {% endif %}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </section>
+
+      <button
+        id="filter-reset"
+        class="filter-reset"
+        type="button"
+      >
+        Сбросить фильтры
+      </button>
+    </aside>
+
+    <section class="catalog-content">
+      <div class="catalog-heading">
+        <h1 class="catalog-heading__title">
+          Каталог
+        </h1>
+
+        {% if selected_category %}
+        <div
+          id="catalog-category-chip"
+          class="catalog-category-chip"
+        >
+          <span>
+            {{ selected_category.title }}
+          </span>
+
+          <button
+            id="clear-category-button"
+            class="catalog-category-chip__clear"
+            type="button"
+            aria-label="Сбросить категорию"
+            title="Сбросить категорию"
+          >
+            ×
+          </button>
+        </div>
+        {% endif %}
+      </div>
+
+      <div
+        id="product-grid"
+        class="product-grid"
+      >
+        {% for row in data %}
+        {% set products = row %}
+        {% set eager_count = 3 if loop.first else 0 %}
+        {% include 'catalog/_product_cards.html' %}
+        {% endfor %}
+
+        <div
+          id="catalog-empty"
+          class="catalog-empty {% if not data %}is-visible{% endif %}"
+        >
+          По выбранным фильтрам ничего не найдено.
+        </div>
+      </div>
+
+      <div
+        id="catalog-loading"
+        class="catalog-loading"
+      >
+        <span class="catalog-loading__dot"></span>
+        <span class="catalog-loading__dot"></span>
+        <span class="catalog-loading__dot"></span>
+      </div>
+
+      <div
+        id="load-more-wrap"
+        class="load-more-wrap"
+        {% if not has_more|default(false) %}
+        hidden
+        {% endif %}
+      >
+        <button
+          id="load-more-button"
+          class="load-more-button"
+          type="button"
+        >
+          Загрузить ещё
+        </button>
+      </div>
+    </section>
+  </div>
+</main>
+
+{% if ad %}
+<button
+  id="ad-modal-trigger"
+  hidden
+  type="button"
+  data-bs-toggle="modal"
+  data-bs-target="#ad-modal"
+></button>
+
+<div
+  id="ad-modal"
+  class="modal fade"
+  role="dialog"
+>
+  <div class="modal-dialog modal-my-sizes">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Реклама</h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body ad-modal-body">
+        {% if ad.format == 'video' %}
+        <video
+          class="ad-media"
+          controls
+          autoplay
+          muted
+        >
+          <source
+            src="{{ url_for('static', filename='ads/' ~ ad.filename) }}"
+          >
+        </video>
+        {% else %}
+        <img
+          class="ad-media"
+          src="{{ url_for('static', filename='ads/' ~ ad.filename) }}"
+          alt="{{ ad.title or 'Реклама' }}"
+          loading="eager"
+        >
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/components/image-fallback.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/catalog.js') }}"
+></script>
+{% endblock %}

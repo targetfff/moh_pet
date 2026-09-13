@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Вход</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/auth.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+  <h1>Вход</h1>
+
+  <div class="auth-page__inner">
+    <form
+      class="auth-form"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <div class="form-floating">
+        <input
+          type="text"
+          class="form-control"
+          name="email"
+          id="email"
+          placeholder="name@example.com"
+          required
+        >
+        <label for="email">
+          Адрес электронной почты
+        </label>
+      </div>
+
+      <div class="form-floating">
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          name="password"
+          placeholder="Пароль"
+          required
+        >
+        <label for="password">
+          Пароль
+        </label>
+      </div>
+
+      <div class="form-check text-start">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          value="remember-me"
+          id="flexCheckDefault"
+          name="remember_me"
+        >
+        <label
+          class="form-check-label"
+          for="flexCheckDefault"
+        >
+          Запомнить меня
+        </label>
+      </div>
+
+      <div class="auth-form__buttons auth-form__buttons--single">
+        <button
+          type="submit"
+          class="btn btn-outline-success"
+        >
+          Войти
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

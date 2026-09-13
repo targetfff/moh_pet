@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Подтверждение электронной почты</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/auth.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="auth-page auth-message-page">
+  <div class="auth-message-card">
+    <h1>Подтвердите электронную почту</h1>
+
+    <p>
+      Для продолжения подтвердите адрес электронной почты,
+      указанный при регистрации.
+    </p>
+
+    <a
+      class="btn btn-outline-success"
+      href="{{ url_for('auth.resend_confirmation') }}"
+    >
+      Отправить письмо повторно
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+.legit-page {
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.legit-intro {
+  display: flow-root;
+}
+
+.legit-intro__image {
+  width: min(30%, 22rem);
+  height: auto;
+  margin: .3rem 1.25rem 1rem 0;
+  float: left;
+  border-radius: .75rem;
+}
+
+.legit-intro__text {
+  font-size: 15pt;
+  line-height: 1.55;
+}
+
+.legit-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+@media (max-width: 42rem) {
+  .legit-intro__image {
+    width: 100%;
+    max-width: 20rem;
+    margin: 0 auto 1.25rem;
+    float: none;
+    display: block;
+  }
+}

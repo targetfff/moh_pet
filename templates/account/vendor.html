@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Личный кабинет продавца</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/DynamicSelect.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/account-vendor.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="container account-page">
+  <h1>Личный кабинет</h1>
+
+  <section class="vendor-profile">
+    <div class="vendor-profile__logo-wrap">
+      {% if vendor.logo %}
+      <img
+        class="vendor-logo"
+        src="{{ url_for('static', filename='img/' ~ vendor.logo) }}"
+        alt="Логотип продавца"
+      >
+      {% else %}
+      <img
+        class="vendor-logo"
+        src="{{ url_for('static', filename='img/570238.png') }}"
+        alt="Логотип продавца"
+      >
+      {% endif %}
+    </div>
+
+    <div class="vendor-profile__info">
+      <h3 class="my-0 fw-normal">
+        {{ vendor.title }}
+      </h3>
+
+      <h4 class="my-0 fw-normal vendor-owner-name">
+        {{ vendor.surname }} {{ vendor.name }} {{ vendor.patronymic }}
+      </h4>
+
+      <form
+        id="vendor_change"
+        action="{{ url_for('seller.update_profile') }}"
+        method="post"
+        enctype="multipart/form-data"
+      >
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            value="{{ vendor.title or '' }}"
+            name="new_title"
+            id="new_title"
+            placeholder="Название"
+          >
+
+          <label for="new_title">
+            {% if vendor.title %}
+              Изменить название
+            {% else %}
+              Добавить название
+            {% endif %}
+          </label>
+        </div>
+
+        <div class="vendor-field-group">
+          <label
+            class="targetff"
+            for="new_logo"
+          >
+            {% if vendor.logo %}
+              Изменить логотип:
+            {% else %}
+              Добавить логотип:
+            {% endif %}
+          </label>
+
+          <input
+            type="file"
+            accept="image/*"
+            name="new_logo"
+            id="new_logo"
+          >
+        </div>
+
+        <button
+          class="btn btn-outline-success"
+          type="submit"
+        >
+          Изменить
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <section class="account-section">
+    <h3>Торговля</h3>
+
+    <div class="vendor-actions-grid">
+      <div class="for_vendor_form">
+        <h4>Заявка на торговлю товаром</h4>
+
+        <p class="targetff">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+          sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Quis imperdiet massa tincidunt nunc pulvinar. Justo laoreet sit
+          amet cursus sit amet dictum sit. Facilisi etiam dignissim diam quis
+          enim lobortis.
+        </p>
+
+        <form
+          id="vendor_trading"
+          action="{{ url_for('seller.create_trade_request') }}"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <select
+            class="form-control"
+            id="product_to_request"
+            name="product_to_request"
+            data-placeholder="Выберите товар"
+            data-dynamic-select
+            required
+          >
+            {% for el in data %}
+            {% set thumbnail_name = el.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+            <option
+              value="{{ el.id }}"
+              class="form-control"
+              data-img="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
+            >
+              {{ el.title }}
+            </option>
+            {% endfor %}
+          </select>
+
+          <div class="form-floating vendor-form-field">
+            <input
+              type="text"
+              class="form-control"
+              name="price"
+              id="price"
+              placeholder="Цена в рублях"
+              required
+            >
+
+            <label for="price">
+              Введите цену (руб.)
+            </label>
+          </div>
+
+          <div class="vendor-field-group">
+            <label
+              class="targetff"
+              for="images"
+            >
+              Добавьте фотографии товара:
+            </label>
+
+            <input
+              type="file"
+              multiple
+              required
+              accept="image/*"
+              name="images[]"
+              id="images"
+            >
+          </div>
+
+          <button
+            class="btn btn-outline-success"
+            type="submit"
+          >
+            Оплатить и отправить заявку
+          </button>
+        </form>
+      </div>
+
+      <div class="for_vendor_form">
+        <h4>Заявка на добавление товара</h4>
+
+        <p class="targetff">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+          sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Quis imperdiet massa tincidunt nunc pulvinar.
+        </p>
+
+        <form
+          id="vendor_product"
+          action="{{ url_for('seller.suggest_product') }}"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <div class="form-floating">
+            <input
+              type="text"
+              class="form-control"
+              name="product_title"
+              id="product_title"
+              placeholder="Название"
+              required
+            >
+
+            <label for="product_title">
+              Введите название
+            </label>
+          </div>
+
+          <div class="vendor-field-group">
+            <label
+              class="targetff"
+              for="images2"
+            >
+              Добавьте изображения товара:
+            </label>
+
+            <input
+              type="file"
+              multiple
+              required
+              accept="image/*"
+              name="images2[]"
+              id="images2"
+            >
+          </div>
+
+          <button
+            class="btn btn-outline-success"
+            type="submit"
+          >
+            Отправить заявку
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="account-section">
+    <h3>Мессенджер</h3>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/DynamicSelect.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/account-vendor.js') }}"
+></script>
+{% endblock %}

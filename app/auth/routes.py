@@ -52,7 +52,7 @@ def login():
             "введены неверно"
         )
 
-    return render_template("login.html")
+    return render_template("auth/login.html")
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
@@ -76,7 +76,7 @@ def register():
             email = email_info.normalized
         except EmailNotValidError:
             flash("Некорректный адрес электронной почты")
-            return render_template("register.html")
+            return render_template("auth/register.html")
 
         if password != password2:
             flash("Пароли не совпадают")
@@ -109,7 +109,7 @@ def register():
 
             return redirect(url_for("auth.login"))
 
-    return render_template("register.html")
+    return render_template("auth/register.html")
 
 
 @auth_bp.route("/logout")
@@ -143,7 +143,7 @@ def confirm_email(confirmation_token):
 
     if email is None:
         return render_template(
-            "invalid_token.html"
+            "auth/invalid_token.html"
         ), 400
 
     user = Users.query.filter_by(
@@ -174,4 +174,4 @@ def unconfirmed():
     if current_user.confirmed:
         return redirect(url_for("catalog.index"))
 
-    return render_template("unconfirmed.html")
+    return render_template("auth/unconfirmed.html")

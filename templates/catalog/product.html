@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>{{ product.title }}</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/virtual-select.min.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/product.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+{% set images = product.images.strip('"[').strip(']"').replace("'", "").replace(",", "").split()[::-1] %}
+
+<div
+  id="product-page-config"
+  data-product-id="{{ product.id }}"
+  data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+  data-cart-url="{{ url_for('catalog.cart') }}"
+  data-liked="{{ 1 if product.id in liked else 0 }}"
+  hidden
+></div>
+
+<div class="product-container">
+  <div class="carousel">
+    <div class="product-main-image-wrap">
+      <img
+        src="{{ url_for('static', filename='img/' ~ product.main_image) }}"
+        class="main-image"
+        alt="{{ product.title }}"
+      >
+
+      <div class="carousel-controls">
+        <button
+          class="prev-button control-button"
+          type="button"
+          aria-label="Предыдущее изображение"
+        >
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+        <button
+          class="next-button control-button"
+          type="button"
+          aria-label="Следующее изображение"
+        >
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="carousel-thumbnails">
+      <img
+        src="{{ url_for('static', filename='img/' ~ product.main_image) }}"
+        class="thumbnail"
+        alt="{{ product.title }}"
+      >
+
+      {% for image_name in images %}
+        {% if image_name != product.main_image %}
+        <img
+          src="{{ url_for('static', filename='img/' ~ image_name) }}"
+          class="thumbnail"
+          alt="{{ product.title }}"
+        >
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="product-info">
+    <h2 class="product-title">
+      {{ product.title }}
+    </h2>
+
+    <h4 id="price" class="product-price">
+      {{ product.price }} руб.
+    </h4>
+
+    {% autoescape false %}
+      {% if product.full_description %}
+      <p class="product-description">
+        {{ product.full_description | replace('\n','<br>') }}
+      </p>
+      {% else %}
+      <p class="product-description">
+        {{ product.description | replace('\n','<br>') }}
+      </p>
+      {% endif %}
+    {% endautoescape %}
+
+    <div
+      id="example-select"
+      data-search="false"
+    ></div>
+
+    <div class="product-vendor-data" hidden>
+      {% for vendor in vendors %}
+      <input
+        class="product-vendor-option"
+        type="hidden"
+        data-vendor-id="{{ vendor.id }}"
+        value="{% if vendor.title %}{{ vendor.title }}{% else %}{{ vendor.name }} {{ vendor.surname }}{% endif %}"
+      >
+      {% endfor %}
+
+      {% for key, value in ven_prices %}
+      <input
+        class="product-vendor-price"
+        type="hidden"
+        data-vendor-id="{{ key }}"
+        value="{{ value }}"
+      >
+      {% endfor %}
+    </div>
+
+    <div class="cart_buttons">
+      <button
+        id="like"
+        type="button"
+        class="double_span_button btn btn-outline-success"
+        data-liked="{{ 1 if product.id in liked else 0 }}"
+      >
+        <span class="slider">
+          <span class="span1">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </span>
+
+          <span class="span2">
+            {% if product.id in liked %}
+              Удалить из избранного
+            {% else %}
+              В избранное
+            {% endif %}
+          </span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        id="go_to_cart"
+        class="btn btn-outline-success"
+      >
+        Купить
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/virtual-select.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/product.js') }}"
+></script>
+{% endblock %}

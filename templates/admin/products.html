@@ -2,92 +2,18 @@
 
 {% block title %}
 <title>Управление товарами</title>
-
-<style>
-  .admin-products-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1em;
-    margin-bottom: 2em;
-  }
-
-  .approved-suggestions {
-    margin-bottom: 2.5em;
-  }
-
-  .suggestion-list {
-    display: grid;
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(220px, 1fr)
-    );
-    gap: 1em;
-  }
-
-  .suggestion-card {
-    padding: 1.2em;
-    background: white;
-    border-radius: 12px;
-    box-shadow:
-      0 1px 5px rgba(0, 0, 0, .12);
-  }
-
-  .products-grid {
-    display: grid;
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(260px, 1fr)
-    );
-    gap: 1.5em;
-  }
-
-  .admin-product-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow:
-      0 1px 5px rgba(0, 0, 0, .12);
-  }
-
-  .admin-product-card img {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: contain;
-    display: block;
-  }
-
-  .admin-product-body {
-    padding: 1em;
-  }
-
-  .admin-product-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5em;
-  }
-
-  .admin-products-pagination {
-    margin-top: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: .75rem;
-  }
-
-  .admin-products-page-number {
-    min-width: 7rem;
-    text-align: center;
-    color: #6c757d;
-  }
-</style>
 {% endblock %}
 
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/admin.css') }}"
+>
+{% endblock %}
 
 {% block body %}
-<div class="container">
-
-  <div class="admin-products-header">
+<div class="container admin-page">
+  <div class="admin-header">
     <div>
       <h1>Управление товарами</h1>
 
@@ -96,23 +22,13 @@
       </div>
     </div>
 
-    <a class="btn btn-success"
-       href="{{ url_for('admin.create_product') }}">
+    <a
+      class="btn btn-success"
+      href="{{ url_for('admin.create_product') }}"
+    >
       Добавить товар
     </a>
   </div>
-
-
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  {% for message in messages %}
-  <div class="alert alert-info">
-    {{ message }}
-  </div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
-
 
   {% if approved_suggestions %}
   <section class="approved-suggestions">
@@ -145,31 +61,22 @@
   </section>
   {% endif %}
 
-
   <h3 class="mb-3">
     Все товары
   </h3>
 
   {% if products %}
   <div class="products-grid">
-
     {% for product in products %}
     {% set thumbnail_name = product.main_image.rsplit('.', 1)[0] ~ '.webp' %}
 
-    <div class="admin-product-card">
-
+    <article class="admin-product-card">
       <img
-        src="{{ url_for(
-            'static',
-            filename='img/thumbs/' ~ thumbnail_name
-        ) }}"
+        src="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
+        data-fallback-src="{{ url_for('static', filename='img/' ~ product.main_image) }}"
         alt="{{ product.title }}"
         loading="lazy"
         decoding="async"
-        onerror="this.onerror=null;this.src='{{ url_for(
-            'static',
-            filename='img/' ~ product.main_image
-        ) }}';"
       >
 
       <div class="admin-product-body">
@@ -184,33 +91,22 @@
         <div class="admin-product-actions">
           <a
             class="btn btn-outline-primary"
-            href="{{ url_for(
-                'catalog.product',
-                id=product.id
-            ) }}"
+            href="{{ url_for('catalog.product', id=product.id) }}"
           >
             Открыть
           </a>
 
           <a
             class="btn btn-outline-secondary"
-            href="{{ url_for(
-                'admin.edit_product',
-                product_id=product.id
-            ) }}"
+            href="{{ url_for('admin.edit_product', product_id=product.id) }}"
           >
             Изменить
           </a>
 
           <form
             method="post"
-            action="{{ url_for(
-                'admin.delete_product',
-                product_id=product.id
-            ) }}"
-            onsubmit="return confirm(
-              'Удалить товар «{{ product.title|e }}»?'
-            );"
+            action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+            data-confirm="Удалить товар «{{ product.title|e }}»?"
           >
             <button
               class="btn btn-outline-danger"
@@ -221,9 +117,8 @@
           </form>
         </div>
       </div>
-    </div>
+    </article>
     {% endfor %}
-
   </div>
 
   <nav
@@ -233,10 +128,7 @@
     {% if has_prev %}
     <a
       class="btn btn-outline-secondary"
-      href="{{ url_for(
-          'admin.products',
-          page=page - 1
-      ) }}"
+      href="{{ url_for('admin.products', page=page - 1) }}"
     >
       ← Назад
     </a>
@@ -256,10 +148,7 @@
     {% if has_next %}
     <a
       class="btn btn-outline-secondary"
-      href="{{ url_for(
-          'admin.products',
-          page=page + 1
-      ) }}"
+      href="{{ url_for('admin.products', page=page + 1) }}"
     >
       Вперёд →
     </a>
@@ -272,7 +161,6 @@
     </span>
     {% endif %}
   </nav>
-
   {% else %}
   <div class="text-muted">
     Товаров пока нет.
@@ -287,6 +175,14 @@
       Вернуться в личный кабинет
     </a>
   </div>
-
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/components/image-fallback.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/admin.js') }}"
+></script>
 {% endblock %}

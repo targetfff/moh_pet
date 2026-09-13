@@ -1,0 +1,107 @@
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__column">
+      <a
+        class="site-footer__brand"
+        href="{{ url_for('catalog.index') }}"
+        aria-label="МоХ — на главную"
+      >
+        <span class="site-footer__logo-wrap">
+          <img
+            class="site-footer__logo"
+            src="{{ url_for('static', filename='const/logo_moh.png') }}"
+            alt=""
+          >
+        </span>
+
+        <span class="site-footer__brand-name">
+          МоХ
+        </span>
+      </a>
+
+      <nav
+        class="site-footer__links"
+        aria-label="МоХ"
+      >
+        <a href="{{ url_for('catalog.index') }}">
+          Каталог
+        </a>
+
+        <a href="{{ url_for('legit.legit_check') }}">
+          Legit check
+        </a>
+
+        <a href="#">
+          Поддержка
+        </a>
+      </nav>
+    </div>
+
+    <div class="site-footer__column">
+      <h2 class="site-footer__title">
+        Покупателям
+      </h2>
+
+      <nav
+        class="site-footer__links"
+        aria-label="Покупателям"
+      >
+        <a href="{{ url_for('catalog.cart') }}">
+          Корзина
+        </a>
+
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('account.account') }}">
+          Личный кабинет
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}">
+          Личный кабинет
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+
+    <div class="site-footer__column">
+      <h2 class="site-footer__title">
+        Продавцам
+      </h2>
+
+      <nav
+        class="site-footer__links"
+        aria-label="Продавцам"
+      >
+        <a href="{{ url_for('seller.become_a_seller') }}">
+          Стать продавцом
+        </a>
+
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('account.account') }}">
+          Личный кабинет
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}">
+          Личный кабинет
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <span>© 2026 МоХ</span>
+
+    <a
+      class="site-footer__repo"
+      href="https://github.com/targetfff/moh_pet"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <i
+        class="fa-brands fa-github"
+        aria-hidden="true"
+      ></i>
+      GitHub
+    </a>
+  </div>
+</footer>

@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Администрация МОХ</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/AdminDynamicSelect.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/PopUpPhotos.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/account-admin.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="container account-page">
+  <h1 class="account-admin-title">
+    Администрация МОХ
+  </h1>
+
+  <h4 class="mb-4">
+    Администрирование
+  </h4>
+
+  <nav class="admin-shortcuts">
+    <a
+      class="btn btn-outline-primary"
+      href="{{ url_for('admin.products') }}"
+    >
+      Товары
+    </a>
+
+    <a
+      class="btn btn-outline-primary"
+      href="{{ url_for('admin.categories') }}"
+    >
+      Категории
+    </a>
+
+    <a
+      class="btn btn-outline-primary"
+      href="{{ url_for('admin.ads') }}"
+    >
+      Реклама
+    </a>
+  </nav>
+
+  <section class="account-section">
+    <h4>Заявки продавцов</h4>
+
+    <h5 class="admin-section-subtitle">
+      Заявки на торговлю
+    </h5>
+
+    <div class="admin-request-grid">
+      {% for i in reqs_data %}
+      {% set ven = i[0] %}
+      {% set prod = i[1] %}
+      {% set req = i[2] %}
+      {% set prod_thumbnail = prod.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+
+      <article class="grid-item">
+        <div class="card mb-4 rounded-3 shadow-sm">
+          <div class="card-body">
+            <div class="card-header py-3">
+              <p class="my-0 fw-normal admin-card-title">
+                Заявка на торговлю от
+                {% if ven.title %}
+                  {{ ven.title }}
+                {% else %}
+                  {{ ven.name }}
+                {% endif %}
+              </p>
+            </div>
+
+            <form
+              id="admin-trade-{{ req.id }}"
+              class="admin-request-form"
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <input
+                type="hidden"
+                name="req_id"
+                value="{{ req.id }}"
+              >
+
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="trade-fio-{{ req.id }}"
+                  readonly
+                  value="{{ ven.surname }} {{ ven.name }} {{ ven.patronymic }}"
+                >
+                <label for="trade-fio-{{ req.id }}">
+                  ФИО продавца
+                </label>
+              </div>
+
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="trade-email-{{ req.id }}"
+                  readonly
+                  value="{{ ven.email }}"
+                >
+                <label for="trade-email-{{ req.id }}">
+                  Электронная почта продавца
+                </label>
+              </div>
+
+              <select
+                class="form-control"
+                id="product-to-access-{{ req.id }}"
+                name="product_to_access"
+                data-placeholder="product_to_access"
+                data-dynamic-select
+                required
+              >
+                <option
+                  value="{{ prod.id }}"
+                  class="form-control"
+                  data-img="{{ url_for('static', filename='img/thumbs/' ~ prod_thumbnail) }}"
+                >
+                  {{ prod.title }}
+                </option>
+              </select>
+
+              <input
+                type="hidden"
+                name="hidden"
+                value="{{ prod.id }}"
+              >
+
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="trade-price-{{ req.id }}"
+                  readonly
+                  value="{{ req.price }}"
+                >
+                <label for="trade-price-{{ req.id }}">
+                  Цена (руб.)
+                </label>
+              </div>
+
+              {% set photos = req.photos
+                .strip('[')
+                .strip(']')
+                .replace("'", "")
+                .replace(",", "")
+                .split() %}
+
+              <div class="admin-photo-grid">
+                {% for photo in photos %}
+                <div class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='img/' ~ photo) }}"
+                    alt=""
+                    class="image"
+                  >
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="admin-request-actions">
+                <button
+                  class="admin-request-action btn btn-success"
+                  type="button"
+                  data-url="{{ url_for('admin.accept_trade_request', request_id=req.id) }}"
+                >
+                  Принять заявку
+                </button>
+
+                <button
+                  class="admin-request-action btn btn-danger"
+                  type="button"
+                  data-url="{{ url_for('admin.reject_trade_request', request_id=req.id) }}"
+                >
+                  Отклонить заявку
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="account-section">
+    <h5 class="admin-section-subtitle">
+      Предложения по добавлению товаров
+    </h5>
+
+    <div class="admin-request-grid">
+      {% for i in sug_data %}
+      {% set ven = i[0] %}
+      {% set sug = i[1] %}
+
+      <article class="grid-item">
+        <div class="card mb-4 rounded-3 shadow-sm">
+          <div class="card-body">
+            <div class="card-header py-3">
+              <p class="my-0 fw-normal admin-card-title">
+                Предложение от
+                {% if ven.title %}
+                  {{ ven.title }}
+                {% else %}
+                  {{ ven.name }}
+                {% endif %}
+              </p>
+            </div>
+
+            <form
+              id="admin-suggestion-{{ sug.id }}"
+              class="admin-request-form"
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <input
+                type="hidden"
+                name="sug_id"
+                value="{{ sug.id }}"
+              >
+
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="suggestion-fio-{{ sug.id }}"
+                  readonly
+                  value="{{ ven.surname }} {{ ven.name }} {{ ven.patronymic }}"
+                >
+                <label for="suggestion-fio-{{ sug.id }}">
+                  ФИО продавца
+                </label>
+              </div>
+
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="suggestion-email-{{ sug.id }}"
+                  readonly
+                  value="{{ ven.email }}"
+                >
+                <label for="suggestion-email-{{ sug.id }}">
+                  Электронная почта продавца
+                </label>
+              </div>
+
+              <div class="form-floating">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="suggestion-title-{{ sug.id }}"
+                  readonly
+                  value="{{ sug.title }}"
+                >
+                <label for="suggestion-title-{{ sug.id }}">
+                  Предложенное название
+                </label>
+              </div>
+
+              {% set photos = sug.photos
+                .strip('[')
+                .strip(']')
+                .replace("'", "")
+                .replace(",", "")
+                .split() %}
+
+              <div class="admin-photo-grid">
+                {% for photo in photos %}
+                <div class="gallery-image">
+                  <img
+                    src="{{ url_for('static', filename='img/' ~ photo) }}"
+                    alt=""
+                    class="image"
+                  >
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="admin-request-actions">
+                <button
+                  class="admin-request-action btn btn-success"
+                  type="button"
+                  data-url="{{ url_for('admin.accept_product_suggestion', suggestion_id=sug.id) }}"
+                >
+                  Принять заявку
+                </button>
+
+                <button
+                  class="admin-request-action btn btn-danger"
+                  type="button"
+                  data-url="{{ url_for('admin.reject_product_suggestion', suggestion_id=sug.id) }}"
+                >
+                  Отклонить заявку
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/DynamicSelect.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/account-admin.js') }}"
+></script>
+{% endblock %}

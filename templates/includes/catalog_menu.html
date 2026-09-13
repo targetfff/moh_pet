@@ -1,0 +1,62 @@
+<div
+  id="catalog-menu-config"
+  data-index-url="{{ url_for('catalog.index') }}"
+  data-tree-url="{{ url_for('catalog.categories_tree') }}"
+  hidden
+></div>
+
+<div
+  id="catalog-menu-backdrop"
+  class="catalog-menu-backdrop"
+></div>
+
+<aside
+  id="catalog-root-drawer"
+  class="catalog-root-drawer"
+  aria-hidden="true"
+>
+  <div
+    id="catalog-root-list"
+    class="catalog-root-list"
+  >
+    <div class="category-menu-state">
+      Категории загрузятся при открытии.
+    </div>
+  </div>
+</aside>
+
+<aside
+  id="catalog-detail-drawer"
+  class="catalog-detail-drawer"
+  aria-hidden="true"
+>
+  <div class="catalog-detail-drawer__inner">
+    <div class="catalog-detail-header">
+      <button
+        id="catalog-detail-back"
+        class="catalog-detail-back"
+        type="button"
+        hidden
+      >
+        <span
+          class="catalog-detail-back__arrow"
+          aria-hidden="true"
+        >
+          ←
+        </span>
+
+        <span id="catalog-detail-parent-title"></span>
+      </button>
+
+      <h2
+        id="catalog-detail-title"
+        class="catalog-detail-title"
+      ></h2>
+    </div>
+
+    <div
+      id="catalog-detail-list"
+      class="catalog-detail-list"
+    ></div>
+  </div>
+</aside>
