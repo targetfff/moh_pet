@@ -9,7 +9,12 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
 
-    SQLALCHEMY_DATABASE_URI = "sqlite:///shop.db"
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "sqlite:///shop.db",
+    )
+
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SECURITY_PASSWORD_SALT = os.getenv(

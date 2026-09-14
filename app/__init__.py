@@ -11,6 +11,7 @@ from config import Config
 
 from .extensions import (
     db,
+    migrate,
     csrf,
     limiter,
     login_manager,
@@ -45,6 +46,8 @@ def create_app(test_config=None):
         )
 
     db.init_app(app)
+    migrate.init_app(app, db)
+
     mail.init_app(app)
     login_manager.init_app(app)
     limiter.init_app(app)
@@ -111,10 +114,7 @@ def create_app(test_config=None):
     @app.context_processor
     def inject_cart_helpers():
         def get_cart_count():
-            if (
-                not current_user.is_authenticated
-                or current_user.status != "client"
-            ):
+            if not current_user.is_authenticated:
                 return 0
 
             return len(

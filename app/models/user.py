@@ -22,7 +22,7 @@ class Users(db.Model, UserMixin):
     )
 
     password = db.Column(
-        db.String(100),
+        db.String(255),
         nullable=False,
     )
 

@@ -405,11 +405,7 @@ def _category_tree_payload():
 def _record_recent_view(
         product_id,
 ):
-    if (
-        not current_user.is_authenticated
-        or current_user.status
-        != "client"
-    ):
+    if not current_user.is_authenticated:
         return False
 
     recent_rows = (
