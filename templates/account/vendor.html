@@ -51,6 +51,7 @@
         method="post"
         enctype="multipart/form-data"
       >
+        {% include 'includes/csrf_field.html' %}
         <div class="form-floating">
           <input
             type="text"
@@ -121,6 +122,7 @@
           method="post"
           enctype="multipart/form-data"
         >
+          {% include 'includes/csrf_field.html' %}
           <select
             class="form-control"
             id="product_to_request"
@@ -198,6 +200,7 @@
           method="post"
           enctype="multipart/form-data"
         >
+          {% include 'includes/csrf_field.html' %}
           <div class="form-floating">
             <input
               type="text"

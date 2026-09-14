@@ -36,6 +36,7 @@
     method="post"
     enctype="multipart/form-data"
   >
+    {% include 'includes/csrf_field.html' %}
     {% if mode == "create" %}
     <section class="admin-form-section">
       <h4>Одобренное предложение</h4>

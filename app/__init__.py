@@ -11,6 +11,7 @@ from config import Config
 
 from .extensions import (
     db,
+    csrf,
     limiter,
     login_manager,
     mail,
@@ -47,11 +48,13 @@ def create_app(test_config=None):
     mail.init_app(app)
     login_manager.init_app(app)
     limiter.init_app(app)
+    csrf.init_app(app)
 
     login_manager.login_view = "auth.login"
     login_manager.login_message = (
         "Войдите в аккаунт, чтобы продолжить."
     )
+    login_manager.session_protection = "strong"
 
     from .performance import (
         init_performance_logging,

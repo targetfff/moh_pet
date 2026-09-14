@@ -73,6 +73,7 @@
             action="{{ url_for('admin.delete_ad', ad_id=ad.id) }}"
             data-confirm="Удалить рекламу «{{ ad.title|e }}»?"
           >
+            {% include 'includes/csrf_field.html' %}
             <button
               class="btn btn-outline-danger"
               type="submit"

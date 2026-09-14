@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-
+from datetime import timedelta
 
 load_dotenv()
 
@@ -91,4 +91,25 @@ class Config:
             "false",
         ).lower()
         == "true"
+    )
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+    SESSION_COOKIE_SECURE = (
+        os.getenv(
+            "COOKIE_SECURE",
+            "false",
+        ).lower()
+        == "true"
+    )
+
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = "Lax"
+
+    REMEMBER_COOKIE_SECURE = (
+        SESSION_COOKIE_SECURE
+    )
+
+    REMEMBER_COOKIE_DURATION = timedelta(
+        days=30
     )

@@ -228,3 +228,16 @@ body.catalog-menu-open .header {
     font-size: 1.4em !important;
   }
 }
+.header-logout-form {
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.header-logout-button {
+  margin: 0;
+  padding-right: 0;
+  padding-left: 0;
+  cursor: pointer;
+  font-family: inherit;
+}

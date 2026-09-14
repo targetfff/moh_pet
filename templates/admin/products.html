@@ -108,6 +108,7 @@
             action="{{ url_for('admin.delete_product', product_id=product.id) }}"
             data-confirm="Удалить товар «{{ product.title|e }}»?"
           >
+            {% include 'includes/csrf_field.html' %}
             <button
               class="btn btn-outline-danger"
               type="submit"

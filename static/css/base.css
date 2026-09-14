@@ -22,16 +22,26 @@
 html {
   width: 100%;
   max-width: 100%;
+  min-height: 100%;
   overflow-x: clip;
-  scrollbar-gutter: stable;
 }
 
 body {
   width: 100%;
   max-width: 100%;
+  min-height: 100vh;
   margin: 0;
+
+  display: flex;
+  flex-direction: column;
+
   overflow-x: clip;
   background-color: #f4f8f4;
+}
+
+.page-content {
+  width: 100%;
+  flex: 1 0 auto;
 }
 
 /*

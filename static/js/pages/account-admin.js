@@ -31,7 +31,8 @@
       );
 
       try {
-        const response = await fetch(
+          const response =
+              await window.MOH.csrfFetch(
           button.dataset.url,
           {
             method: "POST",

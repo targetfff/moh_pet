@@ -1,5 +1,7 @@
 .site-footer {
   width: 100%;
+  flex: 0 0 auto;
+
   margin-top: 5rem;
   border-top: .0625rem solid rgb(255 255 255 / 10%);
   background: #202820;

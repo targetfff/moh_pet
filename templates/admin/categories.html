@@ -80,6 +80,7 @@
                 ) }}"
                 data-confirm="Удалить категорию «{{ category.title|e }}»? Подкатегории будут перенесены уровнем выше."
               >
+                {% include 'includes/csrf_field.html' %}
                 <button
                   class="btn btn-sm btn-outline-danger"
                   type="submit"

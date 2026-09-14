@@ -13,6 +13,9 @@ def app():
     app = create_app(
         {
             "TESTING": True,
+            "WTF_CSRF_ENABLED": False,
+            "SESSION_COOKIE_SECURE": False,
+            "REMEMBER_COOKIE_SECURE": False,
             "SECRET_KEY": "test-secret-key",
             "SECURITY_PASSWORD_SALT":
                 "test-confirmation-salt",

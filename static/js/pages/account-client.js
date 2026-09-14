@@ -68,10 +68,9 @@
       );
 
       try {
-        const response = await fetch(
-          favoriteUrl,
-          {
-            method: "POST",
+          const response = await window.MOH.csrfFetch(
+              favoriteUrl,
+              {method: "POST",
             headers: {
               "Content-Type":
                 "application/x-www-form-urlencoded;charset=UTF-8",

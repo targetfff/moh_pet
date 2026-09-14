@@ -101,10 +101,6 @@
 }
 
 @media (max-width: 48rem) {
-  .auth-message-card h1 {
-    white-space: nowrap;
-  }
-
   .auth-form {
     width: 100%;
   }
@@ -138,4 +134,24 @@
   .auth-message-card h1 {
     white-space: nowrap;
   }
+}
+
+.auth-secondary-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #198754;
+  font: inherit;
+
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+
+  cursor: pointer;
+
+  transition: color .2s ease;
+}
+
+.auth-secondary-link:hover {
+  color: #144c43;
 }

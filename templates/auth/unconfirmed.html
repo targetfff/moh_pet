@@ -37,6 +37,7 @@
       data-resend-confirmation-form
       data-user-id="{{ current_user.id }}"
     >
+      {% include 'includes/csrf_field.html' %}
       <button
         type="submit"
         class="btn btn-outline-success"
@@ -53,11 +54,20 @@
       hidden
     ></p>
 
-    <p class="auth-secondary-action">
-      <a href="{{ url_for('auth.logout') }}">
+    <form
+      class="auth-secondary-action"
+      method="post"
+      action="{{ url_for('auth.logout') }}"
+    >
+      {% include 'includes/csrf_field.html' %}
+
+      <button
+        class="auth-secondary-link"
+        type="submit"
+      >
         Выйти из аккаунта
-      </a>
-    </p>
+      </button>
+    </form>
   </div>
 </div>
 {% endblock %}

@@ -32,6 +32,7 @@
     enctype="multipart/form-data"
     class="admin-form-card"
   >
+    {% include 'includes/csrf_field.html' %}
     {% if mode == "edit" and ad %}
       {% if ad.format == "video" %}
       <video

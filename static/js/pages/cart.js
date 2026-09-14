@@ -110,7 +110,8 @@
   }
 
   async function postForm(url, data) {
-    const response = await fetch(
+    const response =
+        await window.MOH.csrfFetch(
       url,
       {
         method: "POST",

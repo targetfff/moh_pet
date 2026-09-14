@@ -20,6 +20,7 @@
       class="auth-form"
       method="post"
     >
+      {% include 'includes/csrf_field.html' %}
       <div class="form-floating">
         <input
           type="email"

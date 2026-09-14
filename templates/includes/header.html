@@ -57,12 +57,20 @@
         Личный кабинет
       </a>
 
-      <a
-        href="{{ url_for('auth.logout') }}"
-        class="header_container_row__button"
+      <form
+        method="post"
+        action="{{ url_for('auth.logout') }}"
+        class="header-logout-form"
       >
-        Выйти
-      </a>
+        {% include 'includes/csrf_field.html' %}
+
+        <button
+          type="submit"
+          class="header_container_row__button header-logout-button"
+        >
+          Выйти
+        </button>
+      </form>
       {% else %}
       <a
         href="{{ url_for('auth.login') }}"

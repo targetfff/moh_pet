@@ -228,7 +228,8 @@
         );
 
         try {
-          const response = await fetch(
+          const response =
+              await window.MOH.csrfFetch(
             favoriteUrl,
             {
               method: "POST",
