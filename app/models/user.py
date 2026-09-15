@@ -61,3 +61,17 @@ class Users(db.Model, UserMixin):
         passive_deletes=True,
         lazy="select",
     )
+
+    favorites = db.relationship(
+        "Favorite",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="select",
+    )
+
+    orders = db.relationship(
+        "Order",
+        back_populates="user",
+        lazy="select",
+    )

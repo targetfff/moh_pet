@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Избранное</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/components/product-card.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/account-client.css') }}"
+>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/favorites.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="container account-page">
+  <div class="account-header">
+    <h1 class="account-title">Личный кабинет</h1>
+    {% include "account/_tabs.html" %}
+  </div>
+
+  <div
+    id="account-content"
+    class="account-content"
+    data-account-tab="favorites"
+  >
+    <div
+      id="favorites-page-config"
+      data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+      hidden
+    ></div>
+
+    <section class="account-section">
+      <div class="account-section-heading">
+        <h2 class="account-content-title">Избранное</h2>
+
+        <span
+          id="favorites-page-count"
+          class="favorites-page-count"
+        >
+          {{ products|length }}
+        </span>
+      </div>
+
+      <div
+        id="favorites-grid"
+        class="favorites-grid"
+      >
+        {% set eager_count = 4 %}
+        {% include "catalog/_product_cards.html" %}
+      </div>
+
+      <div
+        id="favorites-empty"
+        class="favorites-empty{% if products %} d-none{% endif %}"
+      >
+        В избранном пока ничего нет
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script
+  src="{{ url_for('static', filename='js/components/image-fallback.js') }}"
+></script>
+<script
+  src="{{ url_for('static', filename='js/pages/favorites.js') }}"
+></script>
+{% endblock %}

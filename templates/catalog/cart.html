@@ -15,7 +15,7 @@
 <div
   id="cart-page-config"
   data-amount-url="{{ url_for('catalog.amount') }}"
-  data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+  data-remove-url="{{ url_for('catalog.remove_cart_item') }}"
   hidden
 ></div>
 
@@ -27,148 +27,162 @@
       id="cart-page-count"
       class="cart-page-count"
     >
-      {% if prods|length == 0 %}
+      {% if items|length == 0 %}
         нет товаров
-      {% elif prods|length % 10 == 1 and prods|length % 100 != 11 %}
-        {{ prods|length }} товар
-      {% elif prods|length % 10 in [2, 3, 4] and not (12 <= prods|length % 100 <= 14) %}
-        {{ prods|length }} товара
+      {% elif items|length % 10 == 1 and items|length % 100 != 11 %}
+        {{ items|length }} товар
+      {% elif items|length % 10 in [2, 3, 4] and not (12 <= items|length % 100 <= 14) %}
+        {{ items|length }} товара
       {% else %}
-        {{ prods|length }} товаров
+        {{ items|length }} товаров
       {% endif %}
     </span>
   </div>
 
   <div class="cart_items">
     <ul class="cart_list">
-      {% for i in range(prods | length) %}
-        {% set prod = prods[i][0] %}
-        {% set price = prods[i][1] %}
-        {% set quantity = prods[i][2] %}
-        {% set thumbnail_name = prod.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+      {% for item in items %}
+      {% set offer = item.offer %}
+      {% set prod = offer.product %}
+      {% set vendor = offer.vendor %}
+      {% set price = offer.price %}
+      {% set quantity = item.quantity %}
+      {% set thumbnail_name = prod.main_image.rsplit('.', 1)[0] ~ '.webp' %}
 
-        <li
-          class="cart_div"
-          data-product="{{ prod.id }}"
-          data-price="{{ price }}"
-          data-quantity="{{ quantity }}"
-        >
-          <div class="delete_div">
-            <button
-              class="cart-remove-button"
-              type="button"
-              aria-label="Удалить {{ prod.title }} из корзины"
+      <li
+        class="cart_div"
+        data-cart-item="{{ item.id }}"
+        data-quantity="{{ quantity }}"
+      >
+        <div class="delete_div">
+          <button
+            class="cart-remove-button"
+            type="button"
+            aria-label="Удалить {{ prod.title }} из корзины"
+          >
+            <svg
+              class="cross"
+              width="24"
+              height="24"
+              xmlns="http://www.w3.org/2000/svg"
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              aria-hidden="true"
             >
-              <svg
-                class="cross"
-                width="24"
-                height="24"
-                xmlns="http://www.w3.org/2000/svg"
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                aria-hidden="true"
-              >
-                <path
-                  d="M12 11.293l10.293-10.293.707.707-10.293 10.293
+              <path
+                d="M12 11.293l10.293-10.293.707.707-10.293 10.293
                      10.293 10.293-.707.707-10.293-10.293-10.293
                      10.293-.707-.707 10.293-10.293-10.293-10.293
                      .707-.707 10.293 10.293z"
-                />
-              </svg>
-            </button>
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="cart_item">
+          <div class="cart_item_image">
+            <a href="{{ url_for('catalog.product', id=prod.id) }}">
+              <img
+                class="cart-product-image"
+                src="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
+                data-fallback-src="{{ url_for('static', filename='img/' ~ prod.main_image) }}"
+                alt="{{ prod.title }}"
+                loading="lazy"
+                decoding="async"
+              >
+            </a>
           </div>
 
-          <div class="cart_item">
-            <div class="cart_item_image">
-              <a href="{{ url_for('catalog.product', id=prod.id) }}">
-                <img
-                  class="cart-product-image"
-                  src="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
-                  data-fallback-src="{{ url_for('static', filename='img/' ~ prod.main_image) }}"
-                  alt="{{ prod.title }}"
-                  loading="lazy"
-                  decoding="async"
-                >
-              </a>
-            </div>
-
-            <div class="cart_item_info">
-              <div class="cart_item_cell cart_info_col">
-                <div class="cart_item_title cart-align-left">
-                  Название
-                </div>
-
-                <div class="cart_item_text cart-align-left">
-                  {{ prod.title }}
-                </div>
+          <div class="cart_item_info">
+            <div class="cart_item_cell cart_info_col">
+              <div class="cart_item_title cart-align-left">
+                Название
               </div>
 
-              <div class="cart_item_cell cart_info_col">
-                <div class="cart_item_title">
-                  Кол-во
-                </div>
+              <div class="cart_item_text cart-align-left">
+                {{ prod.title }}
+              </div>
+            </div>
+            <div class="cart_item_cell cart_info_col">
+              <div class="cart_item_title">
+                Продавец
+              </div>
 
-                <div class="cart_item_text">
-                  <button
-                    class="none-button none_minus"
-                    type="button"
-                    aria-label="Уменьшить количество"
-                  >
-                    <i class="fa-solid fa-minus"></i>
-                  </button>
+              <div class="cart_item_text">
+                {% if vendor.title %}
+                {{ vendor.title }}
+                {% else %}
+                {{ vendor.name }} {{ vendor.surname }}
+                {% endif %}
+              </div>
+            </div>
 
-                  <span class="quantity">
+            <div class="cart_item_cell cart_info_col">
+              <div class="cart_item_title">
+                Кол-во
+              </div>
+
+              <div class="cart_item_text">
+                <button
+                  class="none-button none_minus"
+                  type="button"
+                  aria-label="Уменьшить количество"
+                >
+                  <i class="fa-solid fa-minus"></i>
+                </button>
+
+                <span class="quantity">
                     {{ quantity }}
                   </span>
 
-                  <button
-                    class="none-button none_plus"
-                    type="button"
-                    aria-label="Увеличить количество"
-                  >
-                    <i class="fa-solid fa-plus"></i>
-                  </button>
-                </div>
+                <button
+                  class="none-button none_plus"
+                  type="button"
+                  aria-label="Увеличить количество"
+                >
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="cart_item_cell cart_info_col">
+              <div class="cart_item_title">
+                Цена
               </div>
 
-              <div class="cart_item_cell cart_info_col">
-                <div class="cart_item_title">
-                  Цена
-                </div>
+              {% if price != 0 %}
+              <div class="cart_item_text">
+                {{ '%.2f'|format(price) }} руб.
+              </div>
+              {% else %}
+              <div class="cart_item_text">
+                н/д
+              </div>
+              {% endif %}
+            </div>
 
-                {% if price != 0 %}
-                <div class="cart_item_text">
-                  {{ '%.2f'|format(price) }} руб.
-                </div>
-                {% else %}
-                <div class="cart_item_text">
-                  н/д
-                </div>
-                {% endif %}
+            <div class="cart_item_cell cart_info_col">
+              <div class="cart_item_title">
+                Legit Check
               </div>
 
-              <div class="cart_item_cell cart_info_col">
-                <div class="cart_item_title">
-                  Legit Check
-                </div>
+              <div class="cart_item_text">
+                3100 руб.
+              </div>
+            </div>
 
-                <div class="cart_item_text">
-                  3100 руб.
-                </div>
+            <div class="cart_item_cell cart_info_col">
+              <div class="cart_item_title">
+                Итого
               </div>
 
-              <div class="cart_item_cell cart_info_col">
-                <div class="cart_item_title">
-                  Итого
-                </div>
-
-                <div class="cart_item_text prod_total">
-                  {{ '%.2f'|format(price * quantity + 3100) }} руб.
-                </div>
+              <div class="cart_item_text prod_total">
+                {{ '%.2f'|format(price * quantity + 3100) }} руб.
               </div>
             </div>
           </div>
-        </li>
+        </div>
+      </li>
       {% endfor %}
     </ul>
   </div>
@@ -189,13 +203,25 @@
       Legit Check
     </a>
 
-    <button
-      id="order"
-      type="button"
-      class="btn btn-outline-success cart-control-button"
+    <form
+      method="post"
+      action="{{ url_for('orders.checkout') }}"
+      class="cart-order-form"
     >
-      Заказать
-    </button>
+      <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ csrf_token() }}"
+      >
+
+      <button
+        id="order"
+        type="submit"
+        class="btn btn-outline-success cart-control-button"
+      >
+        К оформлению
+      </button>
+    </form>
   </div>
 </div>
 {% endblock %}

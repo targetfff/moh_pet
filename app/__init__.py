@@ -65,7 +65,7 @@ def create_app(test_config=None):
 
     init_performance_logging(app)
 
-    from .models import Users
+    from .models import Favorite, Users
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -121,8 +121,28 @@ def create_app(test_config=None):
                 current_user.cart_items
             )
 
+        def get_favorite_count():
+            if not current_user.is_authenticated:
+                return 0
+
+            return (
+                Favorite.query
+                .filter(
+                    Favorite.user_id == current_user.id
+                ).count())
+
+        def get_notification_count():
+            # Пока уведомления ещё
+            # не реализованы.
+            return 0
+
         return {
-            "get_cart_count": get_cart_count,
+            "get_cart_count":
+                get_cart_count,
+            "get_favorite_count":
+                get_favorite_count,
+            "get_notification_count":
+                get_notification_count,
         }
 
     from .account import account_bp
@@ -131,6 +151,7 @@ def create_app(test_config=None):
     from .catalog import catalog_bp
     from .legit import legit_bp
     from .seller import seller_bp
+    from .orders import orders_bp
 
     app.register_blueprint(admin_bp)
     app.register_blueprint(account_bp)
@@ -138,5 +159,6 @@ def create_app(test_config=None):
     app.register_blueprint(catalog_bp)
     app.register_blueprint(legit_bp)
     app.register_blueprint(seller_bp)
+    app.register_blueprint(orders_bp)
 
     return app

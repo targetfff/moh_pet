@@ -22,7 +22,10 @@ class Products(db.Model):
     vendors = db.Column(db.Text, nullable=True)
     main_logo = db.Column(db.Text, nullable=False)
     logos = db.Column(db.Text, nullable=True)
-    price = db.Column(db.Float, nullable=True)
+    price = db.Column(
+        db.Numeric(12, 2),
+        nullable=True,
+    )
     description = db.Column(db.String(100), nullable=True)
     full_description = db.Column(db.Text, nullable=True)
     images = db.Column(db.Text, nullable=True)

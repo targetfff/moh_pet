@@ -13,7 +13,6 @@
       type="button"
       class="favorite-toggle {% if product.id in liked %}is-liked{% endif %}"
       data-like="{{ product.id }}"
-      data-price="{{ product.price if product.price is not none else -1 }}"
       data-liked="{{ 1 if product.id in liked else 0 }}"
       aria-label="{% if product.id in liked %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
     >

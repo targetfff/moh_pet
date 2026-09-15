@@ -1,24 +1,56 @@
 <div class="floating-actions">
   <a
     class="floating-action-link"
-    href="{{ url_for('catalog.cart') }}"
-    aria-label="Корзина"
+    href="{{ url_for('account.notifications') }}"
+    aria-label="Уведомления"
+    title="Уведомления"
   >
-    <div class="for_sticky_cart">
-      <i class="sticky_cart fa-solid fa-cart-shopping"></i>
+    <div class="for_sticky_notifications">
+      <i
+        class="sticky_notification fa-regular fa-bell"
+      ></i>
 
       <div
-        id="sticky-cart-badge"
-        class="sticky_cart_amount{% if cart_count > 0 %} is-visible{% endif %}"
+        id="sticky-notification-badge"
+        class="floating-action-badge{% if notification_count > 0 %} is-visible{% endif %}"
       >
         <span
-          id="sticky_cart_span"
-          class="sticky_cart_amount__text{% if cart_count > 9 %} is-double-digit{% endif %}"
+          id="sticky_notification_span"
+          class="floating-action-badge__text{% if notification_count > 9 %} is-double-digit{% endif %}"
         >
-          {% if cart_count > 9 %}
+          {% if notification_count > 9 %}
             9+
-          {% elif cart_count > 0 %}
-            {{ cart_count }}
+          {% elif notification_count > 0 %}
+            {{ notification_count }}
+          {% endif %}
+        </span>
+      </div>
+    </div>
+  </a>
+
+  <a
+    class="floating-action-link"
+    href="{{ url_for('account.favorites') }}"
+    aria-label="Избранное"
+    title="Избранное"
+  >
+    <div class="for_sticky_favorite">
+      <i
+        class="sticky_favorite fa-solid fa-heart"
+      ></i>
+
+      <div
+        id="sticky-favorite-badge"
+        class="floating-action-badge{% if favorite_count > 0 %} is-visible{% endif %}"
+      >
+        <span
+          id="sticky_favorite_span"
+          class="floating-action-badge__text{% if favorite_count > 9 %} is-double-digit{% endif %}"
+        >
+          {% if favorite_count > 9 %}
+            9+
+          {% elif favorite_count > 0 %}
+            {{ favorite_count }}
           {% endif %}
         </span>
       </div>
@@ -28,10 +60,29 @@
   <a
     class="floating-action-link"
     href="{{ url_for('catalog.cart') }}"
-    aria-label="Будущие уведомления"
+    aria-label="Корзина"
+    title="Корзина"
   >
-    <div class="for_sticky_bot">
-      <i class="sticky_bot fa-solid fa-robot"></i>
+    <div class="for_sticky_cart">
+      <i
+        class="sticky_cart fa-solid fa-cart-shopping"
+      ></i>
+
+      <div
+        id="sticky-cart-badge"
+        class="floating-action-badge{% if cart_count > 0 %} is-visible{% endif %}"
+      >
+        <span
+          id="sticky_cart_span"
+          class="floating-action-badge__text{% if cart_count > 9 %} is-double-digit{% endif %}"
+        >
+          {% if cart_count > 9 %}
+            9+
+          {% elif cart_count > 0 %}
+            {{ cart_count }}
+          {% endif %}
+        </span>
+      </div>
     </div>
   </a>
 </div>

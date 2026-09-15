@@ -1,4 +1,5 @@
 import random
+from decimal import Decimal
 
 from app.extensions import db
 from app.models import Offers, Products, Vendors
@@ -6,7 +7,7 @@ from app.models import Offers, Products, Vendors
 
 def _reset_catalog_product(product: Products) -> None:
     """Сбрасывает агрегированные данные товара, если активных офферов нет."""
-    product.price = -1
+    product.price = Decimal("-1.00")
     product.vendor = ""
     product.vendors = "[]"
     product.main_logo = ""

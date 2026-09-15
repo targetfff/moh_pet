@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -229,21 +230,44 @@ def create_trade_request():
         )
 
     try:
-        price = float(
+        raw_price = (
             request.form["price"]
+            .strip()
             .replace(",", ".")
         )
 
-    except (KeyError, ValueError):
+        price = Decimal(
+            raw_price
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+    except (
+        KeyError,
+        InvalidOperation,
+    ):
         flash("Некорректная цена.")
 
         return redirect(
             url_for("account.account")
         )
 
-    if price <= 0:
+    if (
+        not price.is_finite()
+        or price <= Decimal("0.00")
+    ):
         flash(
             "Цена должна быть больше нуля."
+        )
+
+        return redirect(
+            url_for("account.account")
+        )
+
+    if price > Decimal("9999999999.99"):
+        flash(
+            "Указана слишком большая цена."
         )
 
         return redirect(

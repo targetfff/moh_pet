@@ -3,21 +3,21 @@ from datetime import datetime
 from app.extensions import db
 
 
-class CartItem(db.Model):
-    __tablename__ = "cart_items"
+class Favorite(db.Model):
+    __tablename__ = "favorites"
 
     __table_args__ = (
         db.UniqueConstraint(
             "user_id",
             "product_id",
-            name="ux_cart_items_user_product",
+            name="ux_favorites_user_product",
         ),
         db.Index(
-            "ix_cart_items_user_id",
+            "ix_favorites_user_id",
             "user_id",
         ),
         db.Index(
-            "ix_cart_items_product_id",
+            "ix_favorites_product_id",
             "product_id",
         ),
     )
@@ -45,10 +45,62 @@ class CartItem(db.Model):
         nullable=False,
     )
 
-    price = db.Column(
-        db.Float,
+    created_at = db.Column(
+        db.DateTime,
         nullable=False,
-        default=0.0,
+        default=datetime.now,
+    )
+
+    user = db.relationship(
+        "Users",
+        back_populates="favorites",
+    )
+
+    product = db.relationship(
+        "Products",
+    )
+
+
+class CartItem(db.Model):
+    __tablename__ = "cart_items"
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id",
+            "offer_id",
+            name="ux_cart_items_user_offer",
+        ),
+        db.Index(
+            "ix_cart_items_user_id",
+            "user_id",
+        ),
+        db.Index(
+            "ix_cart_items_offer_id",
+            "offer_id",
+        ),
+    )
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "users.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+
+    offer_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "offers.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
     )
 
     quantity = db.Column(
@@ -66,6 +118,10 @@ class CartItem(db.Model):
     user = db.relationship(
         "Users",
         back_populates="cart_items",
+    )
+
+    offer = db.relationship(
+        "Offers",
     )
 
 

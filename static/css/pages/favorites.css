@@ -1,0 +1,58 @@
+.favorites-grid {
+    display: grid;
+
+    grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+    gap: 1.25rem;
+}
+
+.favorites-page-count {
+    color: #777;
+}
+
+.favorites-empty {
+    min-height: 14rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #777;
+
+    border:
+            1px solid
+            #e8e8e8;
+
+    border-radius: 12px;
+}
+
+@media (max-width: 62rem) {
+    .favorites-grid {
+        grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+    }
+}
+
+@media (max-width: 48rem) {
+    .favorites-grid {
+        grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    }
+}
+
+@media (max-width: 32rem) {
+    .favorites-grid {
+        grid-template-columns:
+      1fr;
+    }
+}

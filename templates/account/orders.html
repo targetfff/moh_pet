@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Мои заказы</title>
+{% endblock %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/pages/account-client.css') }}"
+>
+{% endblock %}
+
+{% block body %}
+<div class="container account-page">
+  <div class="account-header">
+    <h1 class="account-title">Личный кабинет</h1>
+    {% include "account/_tabs.html" %}
+  </div>
+
+  <div
+    id="account-content"
+    class="account-content"
+    data-account-tab="orders"
+  >
+    <section class="account-section">
+      <h2 class="account-content-title">Мои заказы</h2>
+
+      {% if orders %}
+      <div class="account-orders-list">
+        {% for order in orders %}
+        <a
+          href="{{ url_for('orders.order_detail', order_id=order.id) }}"
+          class="account-order-card"
+        >
+          <div class="account-order-main">
+            <div class="account-order-number">
+              Заказ №{{ order.id }}
+            </div>
+
+            <div class="account-order-date">
+              {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </div>
+          </div>
+
+          <div class="account-order-meta">
+            <span class="order-status {{ order_status_class(order.status) }}">
+              {{ order_status_label(order.status) }}
+            </span>
+
+            <span class="account-order-items">
+              {{ order.items|length }}
+              {% if order.items|length == 1 %}
+                позиция
+              {% elif order.items|length in [2, 3, 4] %}
+                позиции
+              {% else %}
+                позиций
+              {% endif %}
+            </span>
+
+            <strong class="account-order-total">
+              {{ '%.2f'|format(order.total) }} руб.
+            </strong>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="account-orders-empty">
+        У вас пока нет заказов
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

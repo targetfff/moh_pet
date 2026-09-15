@@ -1,0 +1,25 @@
+<nav
+  class="account-tabs"
+  aria-label="Разделы личного кабинета"
+>
+  <a
+    href="{{ url_for('account.account') }}"
+    class="account-tab{% if account_tab == 'overview' %} is-active{% endif %}"
+  >
+    Обзор
+  </a>
+
+  <a
+    href="{{ url_for('account.orders') }}"
+    class="account-tab{% if account_tab == 'orders' %} is-active{% endif %}"
+  >
+    Заказы
+  </a>
+
+  <a
+    href="{{ url_for('account.favorites') }}"
+    class="account-tab{% if account_tab == 'favorites' %} is-active{% endif %}"
+  >
+    Избранное
+  </a>
+</nav>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link
+  rel="stylesheet"
+  href="{{
+    url_for(
+      'static',
+      filename='css/pages/account-client.css'
+    )
+  }}"
+>
+{% endblock %}
+
+{% block title %}
+<title>Заказ №{{ order.id }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+  <h1>
+    Заказ №{{ order.id }}
+  </h1>
+
+  <p>
+    Статус:
+    <span
+      class="order-status {{ status_class }}"
+    >
+    {{ status_label }}
+  </span>
+  </p>
+
+  <p>
+    Покупатель:
+    {{ order.customer_name }}
+  </p>
+
+  <p>
+    Email:
+    {{ order.customer_email }}
+  </p>
+
+  <hr>
+
+  {% for item in order.items %}
+  <div class="mb-4">
+    <h5>
+      {{ item.product_title }}
+    </h5>
+
+    <p class="mb-1">
+      Продавец:
+      {{ item.vendor_title }}
+    </p>
+
+    <p class="mb-1">
+      Цена:
+      {{ '%.2f'|format(item.unit_price) }}
+      руб.
+    </p>
+
+    <p class="mb-1">
+      Количество:
+      {{ item.quantity }}
+    </p>
+
+    <p class="mb-1">
+      Legit Check:
+      {{ '%.2f'|format(item.legit_fee) }}
+      руб.
+    </p>
+
+    <p>
+      Итого:
+      <strong>
+        {{ '%.2f'|format(item.line_total) }}
+        руб.
+      </strong>
+    </p>
+  </div>
+  {% endfor %}
+
+  <hr>
+
+  <p>
+    Товары:
+    {{ '%.2f'|format(order.subtotal) }}
+    руб.
+  </p>
+
+  <p>
+    Legit Check:
+    {{ '%.2f'|format(order.legit_fee_total) }}
+    руб.
+  </p>
+
+  <h4>
+    Всего:
+    {{ '%.2f'|format(order.total) }}
+    руб.
+  </h4>
+
+  {% if order.status == "pending_payment" %}
+  <a
+    href="{{
+      url_for(
+        'orders.payment',
+        order_id=order.id
+      )
+    }}"
+    class="btn btn-success mt-3"
+  >
+    Перейти к оплате
+  </a>
+  {% endif %}
+
+  <a
+    href="{{ url_for('catalog.index') }}"
+    class="btn btn-outline-success mt-3"
+  >
+    Вернуться в каталог
+  </a>
+</div>
+{% endblock %}

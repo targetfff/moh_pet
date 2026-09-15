@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}
 <title>Личный кабинет</title>
@@ -13,116 +13,219 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/pages/account-client.css') }}"
 >
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/components/product-card.css') }}"
+>
 {% endblock %}
 
 {% block body %}
-<div
-  id="client-account-config"
-  data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
-  hidden
-></div>
-
 <div class="container account-page">
-  <h1>Личный кабинет</h1>
+  <div class="account-header">
+    <h1 class="account-title">Личный кабинет</h1>
+    {% include "account/_tabs.html" %}
+  </div>
 
-  <section class="account-section">
-    <h3>История просмотра</h3>
+  <div
+    id="account-content"
+    class="account-content"
+    data-account-tab="overview"
+  >
+    <div
+      id="client-account-config"
+      data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+      hidden
+    ></div>
 
-    <div class="container for_inner">
-      {% if recent %}
-      <div
-        class="itc-slider"
-        data-slider="itc-slider"
-        data-loop="false"
-      >
-        <div class="itc-slider-wrapper">
-          <div class="itc-slider-items">
-            {% for el in recent %}
-            {% set thumbnail_name = el.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+    <section class="account-section">
+      <div class="account-section-heading">
+        <h2 class="account-content-title">Мои заказы</h2>
 
-            <div class="itc-slider-item">
-              <article
-                class="card mb-4 rounded-3 shadow-sm recent-product-card"
-                data-url="{{ url_for('catalog.product', id=el.id) }}"
-              >
-                <div class="card-header py-3">
-                  <h5 class="my-0 fw-normal">
-                    {{ el.title }}
-                  </h5>
-                </div>
+        {% if recent_orders %}
+        <a
+          href="{{ url_for('account.orders') }}"
+          class="account-orders-link"
+        >
+          Все заказы
+        </a>
+        {% endif %}
+      </div>
 
-                <div class="card-body">
-                  <div class="recent-product-image-wrap">
-                    <button
-                      type="button"
-                      class="favorite-toggle {% if el.id in liked %}is-liked{% endif %}"
-                      data-like="{{ el.id }}"
-                      data-price="{{ el.price if el.price is not none else -1 }}"
-                      data-liked="{{ 1 if el.id in liked else 0 }}"
-                      aria-label="{% if el.id in liked %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
-                    >
-                      <svg
-                        class="favorite-heart"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M12 21.35l-1.45-1.32C5.4 15.36
-                             2 12.28 2 8.5 2 5.42 4.42 3 7.5 3
-                             c1.74 0 3.41.81 4.5 2.09
-                             C13.09 3.81 14.76 3 16.5 3
-                             19.58 3 22 5.42 22 8.5
-                             c0 3.78-3.4 6.86-8.55 11.54
-                             L12 21.35z"
-                        />
-                      </svg>
-                    </button>
-
-                    <a href="{{ url_for('catalog.product', id=el.id) }}">
-                      <img
-                        class="img-fluid recent-product-image"
-                        src="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
-                        data-fallback-src="{{ url_for('static', filename='img/' ~ el.main_image) }}"
-                        alt="{{ el.title }}"
-                        loading="lazy"
-                        decoding="async"
-                      >
-                    </a>
-                  </div>
-
-                  <ul class="list-unstyled mt-3 mb-4">
-                    <li>{{ el.description }}</li>
-                  </ul>
-                </div>
-              </article>
+      {% if recent_orders %}
+      <div class="account-orders-list">
+        {% for order in recent_orders %}
+        <a
+          href="{{ url_for('orders.order_detail', order_id=order.id) }}"
+          class="account-order-card"
+        >
+          <div class="account-order-main">
+            <div class="account-order-number">
+              Заказ №{{ order.id }}
             </div>
-            {% endfor %}
+
+            <div class="account-order-date">
+              {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </div>
           </div>
-        </div>
 
-        <button
-          class="itc-slider-btn itc-slider-btn-prev"
-          type="button"
-          aria-label="Предыдущие товары"
-        ></button>
+          <div class="account-order-meta">
+            <span class="order-status {{ order_status_class(order.status) }}">
+              {{ order_status_label(order.status) }}
+            </span>
 
-        <button
-          class="itc-slider-btn itc-slider-btn-next"
-          type="button"
-          aria-label="Следующие товары"
-        ></button>
+            <span class="account-order-items">
+              {{ order.items|length }}
+              {% if order.items|length == 1 %}
+                позиция
+              {% elif order.items|length in [2, 3, 4] %}
+                позиции
+              {% else %}
+                позиций
+              {% endif %}
+            </span>
+
+            <strong class="account-order-total">
+              {{ '%.2f'|format(order.total) }} руб.
+            </strong>
+          </div>
+        </a>
+        {% endfor %}
       </div>
       {% else %}
-      <div class="center-screen">
-        История просмотра пока пуста
+      <div class="account-orders-empty">
+        Заказов пока нет
       </div>
       {% endif %}
-    </div>
-  </section>
+    </section>
 
-  <section class="account-section">
-    <h3>Мессенджер</h3>
-  </section>
+    <section class="account-section">
+      <div class="account-section-heading">
+        <h2 class="account-content-title">
+          Избранное
+        </h2>
+
+        {% if favorite_products %}
+        <a
+          href="{{ url_for('account.favorites') }}"
+          class="account-orders-link"
+        >
+          Всё избранное
+        </a>
+        {% endif %}
+      </div>
+
+      {% if favorite_products %}
+      <div class="overview-favorites-grid">
+        {% set products = favorite_products %}
+        {% set eager_count = 4 %}
+
+        {% include "catalog/_product_cards.html" %}
+      </div>
+      {% else %}
+      <div class="account-orders-empty">
+        В избранном пока ничего нет
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="account-section">
+      <h3>История просмотра</h3>
+
+      <div class="container for_inner">
+        {% if recent %}
+        <div
+          class="itc-slider"
+          data-slider="itc-slider"
+          data-loop="false"
+        >
+          <div class="itc-slider-wrapper">
+            <div class="itc-slider-items">
+              {% for el in recent %}
+              {% set thumbnail_name = el.main_image.rsplit('.', 1)[0] ~ '.webp' %}
+
+              <div class="itc-slider-item">
+                <article
+                  class="card mb-4 rounded-3 shadow-sm recent-product-card"
+                  data-url="{{ url_for('catalog.product', id=el.id) }}"
+                >
+                  <div class="card-header py-3">
+                    <h5 class="my-0 fw-normal">
+                      {{ el.title }}
+                    </h5>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="recent-product-image-wrap">
+                      <button
+                        type="button"
+                        class="favorite-toggle {% if el.id in liked %}is-liked{% endif %}"
+                        data-like="{{ el.id }}"
+                        data-liked="{{ 1 if el.id in liked else 0 }}"
+                        aria-label="{% if el.id in liked %}Убрать из избранного{% else %}Добавить в избранное{% endif %}"
+                      >
+                        <svg
+                          class="favorite-heart"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36
+                               2 12.28 2 8.5 2 5.42 4.42 3 7.5 3
+                               c1.74 0 3.41.81 4.5 2.09
+                               C13.09 3.81 14.76 3 16.5 3
+                               19.58 3 22 5.42 22 8.5
+                               c0 3.78-3.4 6.86-8.55 11.54
+                               L12 21.35z"
+                          />
+                        </svg>
+                      </button>
+
+                      <a href="{{ url_for('catalog.product', id=el.id) }}">
+                        <img
+                          class="img-fluid recent-product-image"
+                          src="{{ url_for('static', filename='img/thumbs/' ~ thumbnail_name) }}"
+                          data-fallback-src="{{ url_for('static', filename='img/' ~ el.main_image) }}"
+                          alt="{{ el.title }}"
+                          loading="lazy"
+                          decoding="async"
+                        >
+                      </a>
+                    </div>
+
+                    <ul class="list-unstyled mt-3 mb-4">
+                      <li>{{ el.description }}</li>
+                    </ul>
+                  </div>
+                </article>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button
+            class="itc-slider-btn itc-slider-btn-prev"
+            type="button"
+            aria-label="Предыдущие товары"
+          ></button>
+
+          <button
+            class="itc-slider-btn itc-slider-btn-next"
+            type="button"
+            aria-label="Следующие товары"
+          ></button>
+        </div>
+        {% else %}
+        <div class="center-screen">
+          История просмотра пока пуста
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="account-section">
+      <h3>Мессенджер</h3>
+    </section>
+  </div>
 </div>
 {% endblock %}
 

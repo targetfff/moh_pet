@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -35,10 +36,16 @@ DEMO_PASSWORD = "Demo12345!"
 IMAGE_DIR = PROJECT_ROOT / "static" / "img"
 ADS_DIR = PROJECT_ROOT / "static" / "ads"
 
+NO_PRICE = Decimal("-1.00")
 
-# ----------------------------------------------------------------------
-# Demo media
-# ----------------------------------------------------------------------
+HOODIE_PRICE = Decimal("7990.00")
+TSHIRT_STORE_ONE_PRICE = Decimal("3990.00")
+TSHIRT_STORE_TWO_PRICE = Decimal("3790.00")
+SNEAKERS_PRICE = Decimal("12990.00")
+BAG_PRICE = Decimal("6490.00")
+
+SNEAKERS_REQUEST_PRICE = Decimal("12490.00")
+HOODIE_REQUEST_PRICE = Decimal("7690.00")
 
 
 def create_demo_image(
@@ -61,7 +68,9 @@ def create_demo_image(
         "#f2f5ef",
     )
 
-    draw = ImageDraw.Draw(image)
+    draw = ImageDraw.Draw(
+        image
+    )
 
     margin = 90
 
@@ -141,7 +150,9 @@ def create_vendor_logo(
         "#202820",
     )
 
-    draw = ImageDraw.Draw(image)
+    draw = ImageDraw.Draw(
+        image
+    )
 
     draw.rounded_rectangle(
         (
@@ -187,7 +198,9 @@ def create_demo_ad():
         "#202820",
     )
 
-    draw = ImageDraw.Draw(image)
+    draw = ImageDraw.Draw(
+        image
+    )
 
     draw.rounded_rectangle(
         (
@@ -301,26 +314,31 @@ def prepare_demo_media():
         ),
     }
 
-    media["vendor_1"] = create_vendor_logo(
-        "demo_vendor_1.png",
-        "MOH ONE",
+    media["vendor_1"] = (
+        create_vendor_logo(
+            "demo_vendor_1.png",
+            "MOH ONE",
+        )
     )
 
-    media["vendor_2"] = create_vendor_logo(
-        "demo_vendor_2.png",
-        "MOH TWO",
+    media["vendor_2"] = (
+        create_vendor_logo(
+            "demo_vendor_2.png",
+            "MOH TWO",
+        )
     )
 
-    # Каталог использует static/img/thumbs/<name>.webp.
     for key in (
             "hoodie",
             "tshirt",
             "sneakers",
             "bag",
     ):
-        thumbnail = ensure_product_thumbnail(
-            media[key],
-            overwrite=True,
+        thumbnail = (
+            ensure_product_thumbnail(
+                media[key],
+                overwrite=True,
+            )
         )
 
         if not thumbnail:
@@ -329,14 +347,11 @@ def prepare_demo_media():
                 f"{media[key]}"
             )
 
-    media["advertisement"] = create_demo_ad()
+    media["advertisement"] = (
+        create_demo_ad()
+    )
 
     return media
-
-
-# ----------------------------------------------------------------------
-# Users
-# ----------------------------------------------------------------------
 
 
 def upsert_user(
@@ -356,22 +371,26 @@ def upsert_user(
     user = (
         Users.query
         .filter(
-            Users.email.in_(emails)
+            Users.email.in_(
+                emails
+            )
         )
         .first()
     )
 
     if user is None:
         user = Users()
-        db.session.add(user)
+        db.session.add(
+            user
+        )
 
     user.email = email
     user.phone = phone
-
-    user.password = generate_password_hash(
-        DEMO_PASSWORD
+    user.password = (
+        generate_password_hash(
+            DEMO_PASSWORD
+        )
     )
-
     user.name = name
     user.surname = surname
     user.status = status
@@ -380,11 +399,6 @@ def upsert_user(
     db.session.flush()
 
     return user
-
-
-# ----------------------------------------------------------------------
-# Vendors
-# ----------------------------------------------------------------------
 
 
 def upsert_vendor(
@@ -403,14 +417,18 @@ def upsert_vendor(
     vendor = (
         Vendors.query
         .filter(
-            Vendors.email.in_(emails)
+            Vendors.email.in_(
+                emails
+            )
         )
         .first()
     )
 
     if vendor is None:
         vendor = Vendors()
-        db.session.add(vendor)
+        db.session.add(
+            vendor
+        )
 
     vendor.surname = user.surname
     vendor.name = user.name
@@ -425,11 +443,6 @@ def upsert_vendor(
     return vendor
 
 
-# ----------------------------------------------------------------------
-# Categories
-# ----------------------------------------------------------------------
-
-
 def upsert_category(
         title,
         parent=None,
@@ -440,10 +453,14 @@ def upsert_category(
         else None
     )
 
-    category = Categories.query.filter_by(
-        title=title,
-        parent=parent_id,
-    ).first()
+    category = (
+        Categories.query
+        .filter_by(
+            title=title,
+            parent=parent_id,
+        )
+        .first()
+    )
 
     if category is None:
         category = Categories(
@@ -451,15 +468,12 @@ def upsert_category(
             parent=parent_id,
         )
 
-        db.session.add(category)
+        db.session.add(
+            category
+        )
         db.session.flush()
 
     return category
-
-
-# ----------------------------------------------------------------------
-# Products
-# ----------------------------------------------------------------------
 
 
 def upsert_product(
@@ -470,16 +484,22 @@ def upsert_product(
         extra_images,
         description,
 ):
-    product = Products.query.filter_by(
-        title=title
-    ).first()
+    product = (
+        Products.query
+        .filter_by(
+            title=title
+        )
+        .first()
+    )
 
     if product is None:
         product = Products(
             title=title,
         )
 
-        db.session.add(product)
+        db.session.add(
+            product
+        )
 
     product.vendor = ""
     product.vendors = "[]"
@@ -487,9 +507,11 @@ def upsert_product(
     product.main_logo = ""
     product.logos = "[]"
 
-    product.price = -1
+    product.price = NO_PRICE
 
-    product.description = description
+    product.description = (
+        description
+    )
 
     product.full_description = (
         "Демонстрационный товар MOH. "
@@ -497,7 +519,9 @@ def upsert_product(
         "для локальной разработки."
     )
 
-    product.main_image = main_image
+    product.main_image = (
+        main_image
+    )
 
     product.images = str(
         [
@@ -507,7 +531,9 @@ def upsert_product(
     )
 
     if product.date is None:
-        product.date = datetime.now()
+        product.date = (
+            datetime.now()
+        )
 
     product.categories = [
         category
@@ -518,21 +544,20 @@ def upsert_product(
     return product
 
 
-# ----------------------------------------------------------------------
-# Offers
-# ----------------------------------------------------------------------
-
-
 def upsert_offer(
         *,
         vendor,
         product,
         price,
 ):
-    offer = Offers.query.filter_by(
-        vendor_id=vendor.id,
-        product_id=product.id,
-    ).first()
+    offer = (
+        Offers.query
+        .filter_by(
+            vendor_id=vendor.id,
+            product_id=product.id,
+        )
+        .first()
+    )
 
     if offer is None:
         offer = Offers(
@@ -540,18 +565,15 @@ def upsert_offer(
             product_id=product.id,
         )
 
-        db.session.add(offer)
+        db.session.add(
+            offer
+        )
 
     offer.price = price
 
     db.session.flush()
 
     return offer
-
-
-# ----------------------------------------------------------------------
-# Trade requests
-# ----------------------------------------------------------------------
 
 
 def upsert_trade_request(
@@ -561,10 +583,14 @@ def upsert_trade_request(
         price,
         photo,
 ):
-    trade_request = Requests.query.filter_by(
-        vendor_id=vendor.id,
-        product_id=product.id,
-    ).first()
+    trade_request = (
+        Requests.query
+        .filter_by(
+            vendor_id=vendor.id,
+            product_id=product.id,
+        )
+        .first()
+    )
 
     if trade_request is None:
         trade_request = Requests(
@@ -577,21 +603,16 @@ def upsert_trade_request(
         )
 
     trade_request.price = price
-
     trade_request.photos = str(
         [photo]
     )
-
-    trade_request.date = datetime.now()
+    trade_request.date = (
+        datetime.now()
+    )
 
     db.session.flush()
 
     return trade_request
-
-
-# ----------------------------------------------------------------------
-# Product suggestions
-# ----------------------------------------------------------------------
 
 
 def upsert_suggestion(
@@ -600,10 +621,14 @@ def upsert_suggestion(
         title,
         photo,
 ):
-    suggestion = Suggestions.query.filter_by(
-        vendor_id=vendor.id,
-        title=title,
-    ).first()
+    suggestion = (
+        Suggestions.query
+        .filter_by(
+            vendor_id=vendor.id,
+            title=title,
+        )
+        .first()
+    )
 
     if suggestion is None:
         suggestion = Suggestions(
@@ -611,13 +636,16 @@ def upsert_suggestion(
             title=title,
         )
 
-        db.session.add(suggestion)
+        db.session.add(
+            suggestion
+        )
 
     suggestion.photos = str(
         [photo]
     )
-
-    suggestion.date = datetime.now()
+    suggestion.date = (
+        datetime.now()
+    )
     suggestion.accepted = False
 
     db.session.flush()
@@ -625,15 +653,12 @@ def upsert_suggestion(
     return suggestion
 
 
-# ----------------------------------------------------------------------
-# Advertisement
-# ----------------------------------------------------------------------
-
-
 def upsert_advertisement(
         filename,
 ):
-    title = "[DEMO] MOH Advertisement"
+    title = (
+        "[DEMO] MOH Advertisement"
+    )
 
     advertisement = (
         Advertisement.query
@@ -644,35 +669,32 @@ def upsert_advertisement(
     )
 
     if advertisement is None:
-        advertisement = Advertisement()
+        advertisement = (
+            Advertisement()
+        )
 
         db.session.add(
             advertisement
         )
 
     advertisement.title = title
-    advertisement.filename = filename
+    advertisement.filename = (
+        filename
+    )
     advertisement.format = "image"
-    advertisement.frame = filename
+    advertisement.frame = (
+        filename
+    )
 
     db.session.flush()
 
     return advertisement
 
 
-# ----------------------------------------------------------------------
-# Bootstrap
-# ----------------------------------------------------------------------
-
-
 def bootstrap():
     media = prepare_demo_media()
 
-    # ------------------------------------------------------------------
-    # Accounts
-    # ------------------------------------------------------------------
-
-    admin = upsert_user(
+    upsert_user(
         email="admin@moh-demo.com",
         aliases=[
             "admin@moh.local",
@@ -683,7 +705,7 @@ def bootstrap():
         status="admin",
     )
 
-    client = upsert_user(
+    upsert_user(
         email="client@moh-demo.com",
         aliases=[
             "client@moh.local",
@@ -715,10 +737,6 @@ def bootstrap():
         status="vendor",
     )
 
-    # ------------------------------------------------------------------
-    # Vendors
-    # ------------------------------------------------------------------
-
     seller_1 = upsert_vendor(
         user=seller_user_1,
         aliases=[
@@ -737,10 +755,6 @@ def bootstrap():
         title="MOH Store Two",
         logo=media["vendor_2"],
     )
-
-    # ------------------------------------------------------------------
-    # Categories
-    # ------------------------------------------------------------------
 
     clothes = upsert_category(
         "Одежда"
@@ -774,10 +788,6 @@ def bootstrap():
         accessories,
     )
 
-    # ------------------------------------------------------------------
-    # Products
-    # ------------------------------------------------------------------
-
     hoodie = upsert_product(
         title="[DEMO] MOH Hoodie",
         category=hoodies,
@@ -798,14 +808,22 @@ def bootstrap():
         description="Демо-футболка MOH.",
     )
 
-    sneakers_product = upsert_product(
-        title="[DEMO] MOH Sneakers",
-        category=sneakers,
-        main_image=media["sneakers"],
-        extra_images=[
-            media["sneakers_extra"],
-        ],
-        description="Демо-кроссовки MOH.",
+    sneakers_product = (
+        upsert_product(
+            title="[DEMO] MOH Sneakers",
+            category=sneakers,
+            main_image=media[
+                "sneakers"
+            ],
+            extra_images=[
+                media[
+                    "sneakers_extra"
+                ],
+            ],
+            description=(
+                "Демо-кроссовки MOH."
+            ),
+        )
     )
 
     bag = upsert_product(
@@ -818,66 +836,49 @@ def bootstrap():
         description="Демо-сумка MOH.",
     )
 
-    # ------------------------------------------------------------------
-    # Offers
-    # ------------------------------------------------------------------
-
-    # Seller One продаёт Hoodie и T-Shirt.
     upsert_offer(
         vendor=seller_1,
         product=hoodie,
-        price=7990.0,
+        price=HOODIE_PRICE,
     )
 
     upsert_offer(
         vendor=seller_1,
         product=tshirt,
-        price=3990.0,
+        price=TSHIRT_STORE_ONE_PRICE,
     )
 
-    # Seller Two тоже продаёт T-Shirt.
-    # На этом товаре сразу видна работа нескольких офферов.
     upsert_offer(
         vendor=seller_2,
         product=tshirt,
-        price=3790.0,
+        price=TSHIRT_STORE_TWO_PRICE,
     )
 
     upsert_offer(
         vendor=seller_2,
         product=sneakers_product,
-        price=12990.0,
+        price=SNEAKERS_PRICE,
     )
 
     upsert_offer(
         vendor=seller_2,
         product=bag,
-        price=6490.0,
+        price=BAG_PRICE,
     )
 
-    # ------------------------------------------------------------------
-    # Pending trade requests
-    # ------------------------------------------------------------------
-
-    # Seller One хочет начать продавать Sneakers.
     upsert_trade_request(
         vendor=seller_1,
         product=sneakers_product,
-        price=12490.0,
+        price=SNEAKERS_REQUEST_PRICE,
         photo=media["request_1"],
     )
 
-    # Seller Two хочет начать продавать Hoodie.
     upsert_trade_request(
         vendor=seller_2,
         product=hoodie,
-        price=7690.0,
+        price=HOODIE_REQUEST_PRICE,
         photo=media["request_2"],
     )
-
-    # ------------------------------------------------------------------
-    # Pending product suggestions
-    # ------------------------------------------------------------------
 
     upsert_suggestion(
         vendor=seller_1,
@@ -891,17 +892,9 @@ def bootstrap():
         photo=media["suggest_2"],
     )
 
-    # ------------------------------------------------------------------
-    # Advertisement
-    # ------------------------------------------------------------------
-
     upsert_advertisement(
         media["advertisement"]
     )
-
-    # ------------------------------------------------------------------
-    # Cached product fields
-    # ------------------------------------------------------------------
 
     refresh_catalog_products(
         [
@@ -915,7 +908,9 @@ def bootstrap():
     db.session.commit()
 
     print()
-    print("MOH bootstrap completed.")
+    print(
+        "MOH bootstrap completed."
+    )
     print()
 
     print("Demo accounts:")
@@ -937,7 +932,7 @@ def bootstrap():
     )
 
     print()
-    print("Created:")
+    print("Created/updated:")
     print("  - 1 admin")
     print("  - 1 client")
     print("  - 2 vendors")

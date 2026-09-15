@@ -56,6 +56,8 @@
 
 <body>
   {% set cart_count = get_cart_count() %}
+  {% set favorite_count = get_favorite_count() %}
+  {% set notification_count = get_notification_count() %}
 
   {% include 'includes/floating_actions.html' %}
   {% include 'includes/header.html' %}
@@ -73,6 +75,9 @@
   ></script>
   <script
     src="{{ url_for('static', filename='js/components/cart-badge.js') }}"
+  ></script>
+  <script
+    src="{{ url_for('static', filename='js/components/favorite-badge.js') }}"
   ></script>
   <script
     src="{{ url_for('static', filename='js/components/header.js') }}"

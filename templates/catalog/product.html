@@ -22,6 +22,7 @@
   id="product-page-config"
   data-product-id="{{ product.id }}"
   data-favorite-url="{{ url_for('catalog.toggle_favorite') }}"
+  data-cart-add-url="{{ url_for('catalog.add_to_cart') }}"
   data-cart-url="{{ url_for('catalog.cart') }}"
   data-liked="{{ 1 if product.id in liked else 0 }}"
   hidden

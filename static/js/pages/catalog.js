@@ -398,7 +398,6 @@
       event.stopPropagation();
 
       const productId = toggle.dataset.like;
-      const price = toggle.dataset.price;
       const isLiked = (
         Number(toggle.dataset.liked) === 1
       );
@@ -417,7 +416,6 @@
             },
             body: new URLSearchParams({
               liked_id: productId,
-              liked_price: price,
               action: isLiked
                 ? "dislike"
                 : "like"
@@ -432,6 +430,15 @@
         }
 
         const result = await response.json();
+
+        if (
+            typeof window.update_favorite_badge
+            === "function"
+        ) {
+          window.update_favorite_badge(
+              result.favorite_count
+          );
+        }
 
         toggle.dataset.liked =
           result.liked ? "1" : "0";
@@ -451,15 +458,6 @@
         toggle.classList.remove("pop");
         void toggle.offsetWidth;
         toggle.classList.add("pop");
-
-        if (
-          typeof window.update_cart_badge
-            === "function"
-        ) {
-          window.update_cart_badge(
-            result.cart_count
-          );
-        }
 
       } catch (error) {
         console.error(

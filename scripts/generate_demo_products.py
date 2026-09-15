@@ -4,6 +4,7 @@ import argparse
 import random
 import sys
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 
@@ -23,9 +24,11 @@ from app.models import (
     product_categories,
 )
 from app.services.catalog import refresh_catalog_products
+from app.services.images import ensure_product_thumbnail
 
 
-DEMO_PREFIX = "[DEMO]"
+GENERATED_PREFIX = "[DEMO-GEN]"
+MONEY_QUANTUM = Decimal("0.01")
 
 TITLE_SUFFIXES = (
     "Nova",
@@ -99,9 +102,8 @@ def existing_product_images():
 def build_title(category, index, rng):
     suffix = rng.choice(TITLE_SUFFIXES)
 
-    # Ограничение Products.title = String(100)
     title = (
-        f"{DEMO_PREFIX} "
+        f"{GENERATED_PREFIX} "
         f"{category.title or 'Товар'} "
         f"{suffix} {index:02d}"
     )
@@ -112,13 +114,21 @@ def build_title(category, index, rng):
 def generate_products(count, seed):
     rng = random.Random(seed)
 
-    vendors = Vendors.query.order_by(
-        Vendors.id.asc()
-    ).all()
+    vendors = (
+        Vendors.query
+        .order_by(
+            Vendors.id.asc()
+        )
+        .all()
+    )
 
-    categories = Categories.query.order_by(
-        Categories.id.asc()
-    ).all()
+    categories = (
+        Categories.query
+        .order_by(
+            Categories.id.asc()
+        )
+        .all()
+    )
 
     images = existing_product_images()
 
@@ -143,17 +153,20 @@ def generate_products(count, seed):
         categories
     )
 
-    existing_demo_count = (
+    existing_generated_count = (
         Products.query
         .filter(
             Products.title.like(
-                f"{DEMO_PREFIX}%"
+                f"{GENERATED_PREFIX}%"
             )
         )
         .count()
     )
 
-    start_number = existing_demo_count + 1
+    start_number = (
+            existing_generated_count + 1
+    )
+
     created_products = []
 
     for offset in range(count):
@@ -165,6 +178,16 @@ def generate_products(count, seed):
 
         image_data = rng.choice(images)
 
+        thumbnail = ensure_product_thumbnail(
+            image_data["main_image"]
+        )
+
+        if not thumbnail:
+            raise RuntimeError(
+                "Не удалось создать thumbnail для "
+                f"{image_data['main_image']}."
+            )
+
         product = Products(
             title=build_title(
                 category,
@@ -175,7 +198,7 @@ def generate_products(count, seed):
             vendors=None,
             main_logo="",
             logos=None,
-            price=-1,
+            price=Decimal("-1.00"),
             description=rng.choice(
                 DESCRIPTIONS
             )[:100],
@@ -200,22 +223,28 @@ def generate_products(count, seed):
             ),
         )
 
-        product.categories = [category]
+        product.categories = [
+            category
+        ]
 
         db.session.add(product)
         created_products.append(product)
 
-    # Получаем id всех новых товаров до создания Offers.
     db.session.flush()
 
     created_ids = []
 
     for product in created_products:
-        created_ids.append(product.id)
+        created_ids.append(
+            product.id
+        )
 
         offer_count = rng.randint(
             1,
-            min(3, len(vendors)),
+            min(
+                3,
+                len(vendors),
+            ),
         )
 
         selected_vendors = rng.sample(
@@ -223,22 +252,30 @@ def generate_products(count, seed):
             offer_count,
         )
 
-        # Базовая цена товара.
-        base_price = rng.randint(
-            5,
-            300,
-        ) * 100
+        base_price = Decimal(
+            rng.randint(
+                5,
+                300,
+            ) * 100
+        )
 
         for vendor in selected_vendors:
-            deviation = rng.uniform(
-                0.90,
-                1.18,
+            deviation = Decimal(
+                str(
+                    rng.uniform(
+                        0.90,
+                        1.18,
+                    )
+                )
             )
 
-            price = round(
-                base_price * deviation,
-                2,
-                )
+            price = (
+                    base_price
+                    * deviation
+            ).quantize(
+                MONEY_QUANTUM,
+                rounding=ROUND_HALF_UP,
+            )
 
             db.session.add(
                 Offers(
@@ -248,11 +285,8 @@ def generate_products(count, seed):
                 )
             )
 
-    # Нужен flush, чтобы bulk refresh увидел новые Offers.
     db.session.flush()
 
-    # Одним Products SELECT + одним Offers/Vendors JOIN
-    # пересчитываем cached price/vendor/logo поля.
     refresh_catalog_products(
         created_ids
     )
@@ -267,7 +301,7 @@ def clean_demo_products():
         Products.query
         .filter(
             Products.title.like(
-                f"{DEMO_PREFIX}%"
+                f"{GENERATED_PREFIX}%"
             )
         )
         .all()
@@ -275,7 +309,8 @@ def clean_demo_products():
 
     if not demo_products:
         print(
-            "Демо-товары не найдены."
+            "Сгенерированные demo-товары "
+            "не найдены."
         )
         return
 
@@ -285,7 +320,9 @@ def clean_demo_products():
     ]
 
     Offers.query.filter(
-        Offers.product_id.in_(demo_ids)
+        Offers.product_id.in_(
+            demo_ids
+        )
     ).delete(
         synchronize_session=False
     )
@@ -299,7 +336,9 @@ def clean_demo_products():
     )
 
     Products.query.filter(
-        Products.id.in_(demo_ids)
+        Products.id.in_(
+            demo_ids
+        )
     ).delete(
         synchronize_session=False
     )
@@ -307,8 +346,8 @@ def clean_demo_products():
     db.session.commit()
 
     print(
-        f"Удалено демо-товаров: "
-        f"{len(demo_ids)}"
+        "Удалено сгенерированных "
+        f"demo-товаров: {len(demo_ids)}"
     )
 
 
@@ -321,7 +360,9 @@ def print_summary(products):
     offer_count = (
         Offers.query
         .filter(
-            Offers.product_id.in_(ids)
+            Offers.product_id.in_(
+                ids
+            )
         )
         .count()
     )
@@ -360,8 +401,8 @@ def print_summary(products):
 def main():
     parser = argparse.ArgumentParser(
         description=(
-            "Добавляет демо-товары с офферами "
-            "существующих продавцов."
+            "Добавляет нагрузочные demo-товары "
+            "с офферами существующих продавцов."
         )
     )
 
@@ -389,8 +430,8 @@ def main():
         "--clean",
         action="store_true",
         help=(
-            "Удалить все товары, "
-            "созданные этим скриптом."
+            "Удалить только товары, "
+            "созданные этим генератором."
         ),
     )
 
@@ -414,7 +455,9 @@ def main():
                 args.seed,
             )
 
-            print_summary(products)
+            print_summary(
+                products
+            )
 
         except Exception:
             db.session.rollback()

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>Оплата заказа №{{ order.id }}</title>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+  <h1>
+    Оплата заказа №{{ order.id }}
+  </h1>
+
+  <p>
+    Сумма заказа:
+    <strong>
+      {{ '%.2f'|format(order.total) }} руб.
+    </strong>
+  </p>
+
+  <hr>
+
+  {% for item in order.items %}
+  <div class="mb-3">
+    <strong>
+      {{ item.product_title }}
+    </strong>
+
+    <div>
+      Продавец:
+      {{ item.vendor_title }}
+    </div>
+
+    <div>
+      {{ item.quantity }} ×
+      {{ '%.2f'|format(item.unit_price) }}
+      руб.
+    </div>
+
+    <div>
+      Legit Check:
+      {{ '%.2f'|format(item.legit_fee) }}
+      руб.
+    </div>
+
+    <div>
+      Итого:
+      {{ '%.2f'|format(item.line_total) }}
+      руб.
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if payment %}
+  <div class="d-flex gap-3 mt-4">
+    <form
+      method="post"
+      action="{{
+          url_for(
+            'orders.payment_success',
+            order_id=order.id
+          )
+        }}"
+    >
+      <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ csrf_token() }}"
+      >
+
+      <button
+        type="submit"
+        class="btn btn-success"
+      >
+        Mock: оплата успешна
+      </button>
+    </form>
+
+    <form
+      method="post"
+      action="{{
+          url_for(
+            'orders.payment_fail',
+            order_id=order.id
+          )
+        }}"
+    >
+      <input
+        type="hidden"
+        name="csrf_token"
+        value="{{ csrf_token() }}"
+      >
+
+      <button
+        type="submit"
+        class="btn btn-outline-danger"
+      >
+        Mock: ошибка оплаты
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

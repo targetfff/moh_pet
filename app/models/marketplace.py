@@ -17,18 +17,35 @@ class Offers(db.Model):
         ),
     )
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
     vendor_id = db.Column(
         db.Integer,
         db.ForeignKey("vendors.id"),
         nullable=False,
     )
+
     product_id = db.Column(
         db.Integer,
         db.ForeignKey("products.id"),
         nullable=False,
     )
-    price = db.Column(db.Float, nullable=False)
+
+    price = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+    )
+
+    product = db.relationship(
+        "Products",
+    )
+
+    vendor = db.relationship(
+        "Vendors",
+    )
 
 
 class Categories(db.Model):
@@ -81,7 +98,10 @@ class Requests(db.Model):
         db.ForeignKey("products.id"),
         nullable=False,
     )
-    price = db.Column(db.Float, nullable=False)
+    price = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+    )
     photos = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=True)
 
